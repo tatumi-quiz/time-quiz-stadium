@@ -115,6 +115,21 @@
         .red-alert-screen {
             animation: redAlertPulse 0.75s infinite;
         }
+        /* スマホ横画面（ランドスケープ）時のキャンバス・レイアウト完全最適化 */
+        @media (orientation: landscape) and (max-height: 750px) {
+            body {
+                padding: 0.25rem 0.5rem;
+            }
+            #fullscreen-board-modal {
+                padding: 0.25rem 0.5rem;
+            }
+            .canvas-container-box {
+                max-height: 52vh !important;
+            }
+            #fs-canvas-container {
+                max-height: 52vh !important;
+            }
+        }
         @keyframes confettiFall {
             0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
             100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
@@ -138,9 +153,6 @@
 
     <!-- ゲームカットイン演出オーバーレイ -->
     <div id="cutin-layer" class="fixed inset-0 pointer-events-none z-[115] flex items-center justify-center"></div>
-
-    <!-- 観覧者リアクション浮遊レイヤー -->
-    <div id="cheer-floating-layer" class="fixed inset-0 pointer-events-none z-[110] overflow-hidden"></div>
 
     <!-- カスタム確認モーダル -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
@@ -173,8 +185,8 @@
         </div>
     </div>
 
-    <!-- ==================== 手書きパネル全画面表示オーバーレイ（スマホでも強制16:9比率キープ） ==================== -->
-    <div id="fullscreen-board-modal" class="fixed inset-0 bg-white z-[70] hidden flex-col justify-between p-2 sm:p-4 select-none">
+    <!-- ==================== 手書きパネル全画面表示オーバーレイ ==================== -->
+    <div id="fullscreen-board-modal" class="fixed inset-0 bg-white z-[70] hidden flex-col justify-between p-2 sm:p-4 select-none transition-shadow">
         <!-- 全画面トップHUD -->
         <div class="rainbow-border-panel rounded-2xl p-2.5 sm:px-4 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2 min-w-0">
@@ -224,10 +236,10 @@
             <span id="fs-question-ticker" class="text-xs sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
         </div>
 
-        <!-- 全画面メイン手書きキャンバス（縦横どちらでも完全な16:9レターボックス比率を維持） -->
+        <!-- 全画面メイン手書きキャンバス（横画面でも縦横比16:9を厳守し、画面内に完璧に収まるよう自動縮小） -->
         <div class="relative flex-1 w-full flex items-center justify-center overflow-hidden my-1">
-            <div id="fs-canvas-container" class="relative w-full max-w-4xl aspect-[16/9] rounded-2xl overflow-hidden border-4 border-cyan-500 bg-white shadow-xl flex items-center justify-center">
-                <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block"></canvas>
+            <div id="fs-canvas-container" class="relative w-full max-w-5xl aspect-[16/9] max-h-[62vh] rounded-2xl overflow-hidden border-4 border-cyan-500 bg-white shadow-xl flex items-center justify-center">
+                <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
 
                 <div id="fs-spectating-badge" class="hidden absolute top-3 left-3 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1.5 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
                     <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
@@ -282,13 +294,6 @@
                     </button>
                 </div>
             </div>
-
-            <div id="fs-watcher-toolbar" class="hidden max-w-2xl mx-auto rainbow-border-panel rounded-2xl p-2.5 flex flex-wrap items-center justify-center gap-2">
-                <span class="text-xs font-black text-purple-600 mr-1"><i class="fa-solid fa-bullhorn mr-1"></i>応援スタンプ:</span>
-                <button data-cheer="👏 ナイス！" class="cheer-btn px-3.5 py-1.5 bg-red-50 hover:bg-red-100 border-2 border-red-400 rounded-full text-xs sm:text-sm font-black text-red-600 game-btn">👏 ナイス！</button>
-                <button data-cheer="🔥 いけるぞ！" class="cheer-btn px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 border-2 border-orange-400 rounded-full text-xs sm:text-sm font-black text-orange-600 game-btn">🔥 いけるぞ！</button>
-                <button data-cheer="💡 ひらめいた！" class="cheer-btn px-3.5 py-1.5 bg-cyan-50 hover:bg-cyan-100 border-2 border-cyan-400 rounded-full text-xs sm:text-sm font-black text-cyan-600 game-btn">💡 ひらめいた！</button>
-            </div>
         </div>
     </div>
 
@@ -334,7 +339,7 @@
                 <button type="button" data-role="spectator" class="lobby-role-btn p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-cyan-400 text-center transition">
                     <div class="text-2xl mb-1">📣</div>
                     <div class="font-black text-xs sm:text-sm text-cyan-600">観覧者</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5 font-bold">全画面観戦＆応援</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5 font-bold">全画面観戦</div>
                 </button>
             </div>
         </div>
@@ -472,104 +477,25 @@
         <!-- メイン2カラムレイアウト -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
 
-            <!-- 左エリア（8カラム）：要望1に基づき「解答表示パネル」を上に移動 -->
+            <!-- 左エリア（8カラム） -->
             <div class="lg:col-span-8 flex flex-col gap-3">
 
-                <!-- 【1】現在の解答者ターンバナー＆リアルタイム手書きステージ（上に配置） -->
-                <div id="live-stage-panel" class="white-arcade-card rounded-2xl p-4 border-2 border-cyan-400">
-                    <div id="active-turn-banner" class="bg-cyan-50 border-2 border-cyan-400 rounded-xl p-3 mb-3 flex flex-wrap items-center justify-between gap-2">
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <span class="bg-cyan-500 text-white font-black text-xs px-2.5 py-1 rounded-lg whitespace-nowrap">現在の解答者</span>
-                            <span id="disp-current-drawer" class="text-lg sm:text-2xl font-black text-slate-800 truncate">待機中...</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div id="turn-instruction-badge" class="hidden sm:inline-block text-xs font-black text-orange-600 bg-white border-2 border-orange-400 px-3 py-1 rounded-full">
-                                司会者の開始をお待ちください
-                            </div>
-                            <button id="btn-enter-fullscreen" class="px-3.5 py-2 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn flex items-center gap-1.5">
-                                <i class="fa-solid fa-expand"></i>
-                                <span>全画面表示</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="canvas-frame" class="relative w-full max-w-2xl mx-auto aspect-[16/9] rounded-2xl overflow-hidden border-4 border-blue-500 bg-white shadow-lg">
-                        <canvas id="relay-live-canvas" class="relay-canvas w-full h-full block"></canvas>
-
-                        <div id="canvas-readonly-badge" class="hidden absolute top-2.5 left-2.5 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
-                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ中継中
-                        </div>
-
-                        <div id="submitted-waiting-overlay" class="hidden absolute inset-0 bg-white/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center">
-                            <div class="bg-white border-4 border-orange-400 px-6 py-4 rounded-2xl shadow-xl animate-pop">
-                                <div class="text-orange-500 font-black text-lg sm:text-xl mb-1">
-                                    <i class="fa-solid fa-gavel fa-bounce mr-1.5"></i>解答完了！司会者判定中...
-                                </div>
-                                <p class="text-xs text-slate-600 font-bold">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 解答者用ペンツール＆解答完了ボタン -->
-                    <div id="answerer-controls" class="hidden max-w-2xl mx-auto mt-3 flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border-2 border-blue-300">
-                        <div class="flex items-center gap-1.5 sm:gap-2">
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-slate-900 ring-2 ring-offset-2 ring-red-500 scale-110 transition" data-color="#0f172a" title="黒"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-red-500 transition" data-color="#ef4444" title="赤"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-orange-500 transition" data-color="#f97316" title="橙"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-green-500 transition" data-color="#22c55e" title="緑"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-blue-500 transition" data-color="#3b82f6" title="青"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-purple-500 transition" data-color="#a855f7" title="紫"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-white border-2 border-slate-400 text-slate-600 flex items-center justify-center text-xs transition" data-color="#ffffff" title="消しゴム">
-                                <i class="fa-solid fa-eraser"></i>
-                            </button>
-                            <div class="h-5 w-px bg-slate-300 mx-1"></div>
-                            <button class="r-size-btn px-2.5 py-1 rounded text-xs font-black bg-cyan-500 text-white" data-size="5">細</button>
-                            <button class="r-size-btn px-2.5 py-1 rounded text-xs font-black text-slate-600 bg-white border border-slate-300" data-size="12">太</button>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <button id="btn-canvas-undo" class="px-3 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-extrabold rounded-xl text-xs transition">
-                                <i class="fa-solid fa-rotate-left mr-1"></i>戻す
-                            </button>
-                            <button id="btn-canvas-clear" class="px-3 py-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-300 font-black rounded-xl text-xs transition">
-                                <i class="fa-solid fa-trash-can mr-1"></i>全消去
-                            </button>
-                            <button id="btn-submit-answer" class="px-4 sm:px-5 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
-                                <i class="fa-solid fa-bell mr-1"></i> 解答完了！
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 司会者用 ○×判定ボタン -->
-                    <div id="host-judge-controls" class="hidden max-w-2xl mx-auto mt-3 bg-orange-50 p-3 rounded-2xl border-2 border-orange-400">
-                        <div class="text-center text-xs font-black text-orange-700 mb-2">
-                            <i class="fa-solid fa-gavel mr-1"></i> 司会者判定（提出前でもリアルタイムで即判定できます！）
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button id="btn-judge-correct" class="py-3.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-base sm:text-lg game-btn flex items-center justify-center gap-2">
-                                <span class="text-2xl">⭕</span> 正解！（次の人へ）
-                            </button>
-                            <button id="btn-judge-wrong" class="py-3.5 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-base sm:text-lg game-btn flex items-center justify-center gap-2">
-                                <span class="text-2xl">❌</span> 不正解（書き直し）
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 観覧者＆待機中解答者用 応援スタンプバー -->
-                    <div id="spectator-cheer-bar" class="hidden max-w-2xl mx-auto mt-3 bg-purple-50 p-2.5 rounded-xl border-2 border-purple-200 flex flex-wrap items-center justify-center gap-2">
-                        <span class="text-xs font-black text-purple-600 mr-1">応援スタンプ:</span>
-                        <button data-cheer="👏 ナイス！" class="cheer-btn px-3 py-1.5 bg-white hover:bg-red-50 border-2 border-red-400 rounded-full text-xs font-black text-red-500 transition">👏 ナイス！</button>
-                        <button data-cheer="🔥 いけるぞ！" class="cheer-btn px-3 py-1.5 bg-white hover:bg-orange-50 border-2 border-orange-400 rounded-full text-xs font-black text-orange-500 transition">🔥 いけるぞ！</button>
-                        <button data-cheer="⏰ 急げ〜！" class="cheer-btn px-3 py-1.5 bg-white hover:bg-cyan-50 border-2 border-cyan-400 rounded-full text-xs font-black text-cyan-600 transition">⏰ 急げ〜！</button>
-                        <button data-cheer="🎉 やったー！" class="cheer-btn px-3 py-1.5 bg-white hover:bg-green-50 border-2 border-green-400 rounded-full text-xs font-black text-green-600 transition">🎉 やったー！</button>
+                <!-- 【1】司会者コントロール＆設定パネル（表示・非表示ボタン付き） -->
+                <div class="white-arcade-card rounded-2xl p-3 border-2 border-orange-400">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-black text-orange-600 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-crown text-yellow-500"></i> 司会者コントロールパネル
+                        </h3>
+                        <button type="button" id="btn-toggle-host-panel" class="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-black rounded-lg game-btn">
+                            <i class="fa-solid fa-eye-slash mr-1" id="host-panel-toggle-icon"></i><span id="host-panel-toggle-text">非表示にする</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- 【2】司会者コントロール＆設定パネル（下に移動） -->
-                <div id="host-panel" class="hidden rainbow-border-panel rounded-2xl p-4">
+                <div id="host-panel" class="rainbow-border-panel rounded-2xl p-4">
                     <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b-2 border-slate-100">
                         <h3 class="font-black text-orange-600 text-sm sm:text-base flex items-center gap-2">
-                            <i class="fa-solid fa-crown text-yellow-500"></i> 司会者コントロールパネル
+                            <i class="fa-solid fa-crown text-yellow-500"></i> 司会者コントロール＆問題設定
                         </h3>
                         <div class="flex flex-wrap gap-1.5">
                             <button id="btn-load-sample" class="px-2.5 py-1.5 bg-yellow-50 hover:bg-yellow-100 text-orange-600 border-2 border-yellow-400 rounded-lg text-xs font-black transition">
@@ -690,10 +616,11 @@
                         </div>
                     </div>
 
-                    <!-- タブ4：6種類のBGM・効果音設定 -->
+                    <!-- タブ4：6種類のBGM・効果音設定（大容量ファイル対応版） -->
                     <div id="tab-sounds" class="host-tab-content hidden space-y-2 text-xs mb-3">
-                        <div class="text-[11px] text-slate-600 font-bold mb-1">
-                            6つのシーンすべてに個別の <span class="text-purple-600 font-black">.mp3 / .mp4</span> ファイルまたは内蔵サウンドを設定できます。
+                        <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-2.5 text-blue-800 font-bold leading-relaxed mb-2">
+                            <i class="fa-solid fa-circle-info mr-1"></i> <strong>5000KB(5MB)以上の長いBGMも全員で同期共有可能！</strong><br>
+                            BGMや効果音にファイルを選択すると、自動でクラウドにアップロードされ、ルーム内の全員のブラウザに同じBGMが同期再生されます。
                         </div>
                         <div id="sound-slots-container" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
                     </div>
@@ -715,6 +642,87 @@
                     </div>
                 </div>
 
+                <!-- 【2】現在の解答者ターンバナー＆リアルタイム手書きステージ（スマホ横画面最適化） -->
+                <div id="live-stage-panel" class="white-arcade-card rounded-2xl p-4 border-2 border-cyan-400">
+                    <div id="active-turn-banner" class="bg-cyan-50 border-2 border-cyan-400 rounded-xl p-3 mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="bg-cyan-500 text-white font-black text-xs px-2.5 py-1 rounded-lg whitespace-nowrap">現在の解答者</span>
+                            <span id="disp-current-drawer" class="text-lg sm:text-2xl font-black text-slate-800 truncate">待機中...</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div id="turn-instruction-badge" class="hidden sm:inline-block text-xs font-black text-orange-600 bg-white border-2 border-orange-400 px-3 py-1 rounded-full">
+                                司会者の開始をお待ちください
+                            </div>
+                            <button id="btn-enter-fullscreen" class="px-3.5 py-2 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn flex items-center gap-1.5">
+                                <i class="fa-solid fa-expand"></i>
+                                <span>全画面表示</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="canvas-frame" class="canvas-container-box relative w-full max-w-2xl mx-auto aspect-[16/9] max-h-[55vh] rounded-2xl overflow-hidden border-4 border-blue-500 bg-white shadow-lg flex items-center justify-center">
+                        <canvas id="relay-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
+
+                        <div id="canvas-readonly-badge" class="hidden absolute top-2.5 left-2.5 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ中継中
+                        </div>
+
+                        <div id="submitted-waiting-overlay" class="hidden absolute inset-0 bg-white/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center">
+                            <div class="bg-white border-4 border-orange-400 px-6 py-4 rounded-2xl shadow-xl animate-pop">
+                                <div class="text-orange-500 font-black text-lg sm:text-xl mb-1">
+                                    <i class="fa-solid fa-gavel fa-bounce mr-1.5"></i>解答完了！司会者判定中...
+                                </div>
+                                <p class="text-xs text-slate-600 font-bold">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 解答者用ペンツール＆解答完了ボタン -->
+                    <div id="answerer-controls" class="hidden max-w-2xl mx-auto mt-3 flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border-2 border-blue-300">
+                        <div class="flex items-center gap-1.5 sm:gap-2">
+                            <button class="r-color-btn w-8 h-8 rounded-full bg-slate-900 ring-2 ring-offset-2 ring-red-500 scale-110 transition" data-color="#0f172a" title="黒"></button>
+                            <button class="r-color-btn w-8 h-8 rounded-full bg-red-500 transition" data-color="#ef4444" title="赤"></button>
+                            <button class="r-color-btn w-8 h-8 rounded-full bg-orange-500 transition" data-color="#f97316" title="橙"></button>
+                            <button class="r-color-btn w-8 h-8 rounded-full bg-green-500 transition" data-color="#22c55e" title="緑"></button>
+                            <button class="r-color-btn w-8 h-8 rounded-full bg-blue-500 transition" data-color="#3b82f6" title="青"></button>
+                            <button class="r-color-btn w-8 h-8 rounded-full bg-purple-500 transition" data-color="#a855f7" title="紫"></button>
+                            <button class="r-color-btn w-8 h-8 rounded-full bg-white border-2 border-slate-400 text-slate-600 flex items-center justify-center text-xs transition" data-color="#ffffff" title="消しゴム">
+                                <i class="fa-solid fa-eraser"></i>
+                            </button>
+                            <div class="h-5 w-px bg-slate-300 mx-1"></div>
+                            <button class="r-size-btn px-2.5 py-1 rounded text-xs font-black bg-cyan-500 text-white" data-size="5">細</button>
+                            <button class="r-size-btn px-2.5 py-1 rounded text-xs font-black text-slate-600 bg-white border border-slate-300" data-size="12">太</button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button id="btn-canvas-undo" class="px-3 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-extrabold rounded-xl text-xs transition">
+                                <i class="fa-solid fa-rotate-left mr-1"></i>戻す
+                            </button>
+                            <button id="btn-canvas-clear" class="px-3 py-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-300 font-black rounded-xl text-xs transition">
+                                <i class="fa-solid fa-trash-can mr-1"></i>全消去
+                            </button>
+                            <button id="btn-submit-answer" class="px-4 sm:px-5 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                                <i class="fa-solid fa-bell mr-1"></i> 解答完了！
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 司会者用 ○×判定ボタン -->
+                    <div id="host-judge-controls" class="hidden max-w-2xl mx-auto mt-3 bg-orange-50 p-3 rounded-2xl border-2 border-orange-400">
+                        <div class="text-center text-xs font-black text-orange-700 mb-2">
+                            <i class="fa-solid fa-gavel mr-1"></i> 司会者判定（提出前でもリアルタイムで即判定できます！）
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="btn-judge-correct" class="py-3.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-base sm:text-lg game-btn flex items-center justify-center gap-2">
+                                <span class="text-2xl">⭕</span> 正解！（次の人へ）
+                            </button>
+                            <button id="btn-judge-wrong" class="py-3.5 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-base sm:text-lg game-btn flex items-center justify-center gap-2">
+                                <span class="text-2xl">❌</span> 不正解（書き直し）
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 【3】正解済みフリップ一覧ギャラリー -->
                 <div class="white-arcade-card rounded-2xl p-4 border-2 border-green-400">
                     <div class="flex items-center justify-between mb-3 pb-2 border-b-2 border-slate-100">
@@ -731,11 +739,22 @@
             <!-- 右エリア（4カラム） -->
             <aside class="lg:col-span-4 flex flex-col gap-3">
 
-                <!-- チーム＆チームポイントボード -->
-                <div class="rainbow-border-panel rounded-2xl p-4">
-                    <div class="flex items-center justify-between pb-2 mb-2.5 border-b-2 border-slate-100">
+                <!-- チーム＆チームポイントボード（表示・非表示ボタン付き） -->
+                <div class="white-arcade-card rounded-2xl p-3 border-2 border-purple-400">
+                    <div class="flex items-center justify-between">
                         <h3 class="font-black text-purple-600 text-sm flex items-center gap-1.5">
                             <i class="fa-solid fa-shield-halved"></i> チーム＆チーム得点
+                        </h3>
+                        <button type="button" id="btn-toggle-team-panel" class="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white text-xs font-black rounded-lg game-btn">
+                            <i class="fa-solid fa-eye-slash mr-1" id="team-panel-toggle-icon"></i><span id="team-panel-toggle-text">非表示にする</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="team-panel" class="rainbow-border-panel rounded-2xl p-4">
+                    <div class="flex items-center justify-between pb-2 mb-2.5 border-b-2 border-slate-100">
+                        <h3 class="font-black text-purple-600 text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-shield-halved"></i> チーム＆チーム得点管理
                         </h3>
                         <button type="button" id="btn-create-team" class="px-2.5 py-1 bg-purple-500 hover:bg-purple-600 text-white text-xs font-black rounded-lg game-btn">
                             <i class="fa-solid fa-plus mr-1"></i>チーム作成
@@ -779,12 +798,23 @@
                     <div id="teams-list-container" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
                 </div>
 
-                <!-- 今回の出場メンバー解答順番＆個人ポイントボード -->
-                <div class="white-arcade-card rounded-2xl p-4 border-2 border-blue-400 flex flex-col gap-3">
+                <!-- 今回の出場メンバー解答順番＆個人ポイントボード（表示・非表示ボタン付き） -->
+                <div class="white-arcade-card rounded-2xl p-3 border-2 border-blue-400">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-black text-blue-600 text-sm flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrow-down-1-9"></i> 解答順番＆個人得点
+                        </h3>
+                        <button type="button" id="btn-toggle-order-panel" class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-black rounded-lg game-btn">
+                            <i class="fa-solid fa-eye-slash mr-1" id="order-panel-toggle-icon"></i><span id="order-panel-toggle-text">非表示にする</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="order-panel" class="white-arcade-card rounded-2xl p-4 border-2 border-blue-400 flex flex-col gap-3">
                     <div>
                         <div class="flex items-center justify-between pb-2 mb-2 border-b-2 border-slate-100">
                             <h3 class="font-black text-blue-600 text-sm flex items-center gap-1.5">
-                                <i class="fa-solid fa-arrow-down-1-9"></i> 解答順番＆個人得点 (<span id="count-answerers">0</span>人)
+                                <i class="fa-solid fa-arrow-down-1-9"></i> 出場メンバー順 (<span id="count-answerers">0</span>人)
                             </h3>
                             <span class="text-[10px] font-extrabold text-slate-400">1番手から順に交代</span>
                         </div>
@@ -817,6 +847,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const USER_FIREBASE_CONFIG = {
             apiKey: "AIzaSyAfLRWK-djjENH8tq4u9onsqcffv_ZlTzs",
@@ -838,6 +869,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         let currentUser = null;
         let currentRoomId = null;
@@ -846,12 +878,11 @@
 
         let roomUnsubscribe = null;
         let strokesUnsubscribe = null;
-        let cheersUnsubscribe = null;
 
         async function initAuth() {
             const statusEl = document.getElementById('firebase-status');
             if (isConfigPlaceholder) {
-                statusEl.innerHTML = `<span class="text-red-500 font-black"><i class="fa-solid fa-triangle-exclamation mr-1"></i>HTML内の USER_FIREBASE_CONFIG にあなたのFirebase設定を貼り付けてください</span>`;
+                statusEl.innerHTML = `<span class="text-red-500 font-black"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Firebase設定を確認してください</span>`;
                 return;
             }
             try {
@@ -862,7 +893,7 @@
                 }
             } catch (err) {
                 console.error("Auth error:", err);
-                statusEl.innerHTML = `<span class="text-red-500 font-black"><i class="fa-solid fa-circle-xmark mr-1"></i>接続エラー：Firebaseの「匿名認証」と「承認済みドメイン」を確認してください</span>`;
+                statusEl.innerHTML = `<span class="text-red-500 font-black"><i class="fa-solid fa-circle-xmark mr-1"></i>接続エラー</span>`;
                 showToast("サーバー認証エラーが発生しました。", "error");
             }
         }
@@ -878,7 +909,38 @@
         initAuth();
 
         // ==========================================
-        // 2. 虹の7色カラーパレット定義
+        // 2. パネルの表示・非表示切り替え機能
+        // ==========================================
+        function setupPanelToggles() {
+            const toggles = [
+                { btn: 'btn-toggle-host-panel', panel: 'host-panel', icon: 'host-panel-toggle-icon', text: 'host-panel-toggle-text' },
+                { btn: 'btn-toggle-team-panel', panel: 'team-panel', icon: 'team-panel-toggle-icon', text: 'team-panel-toggle-text' },
+                { btn: 'btn-toggle-order-panel', panel: 'order-panel', icon: 'order-panel-toggle-icon', text: 'order-panel-toggle-text' }
+            ];
+
+            toggles.forEach(t => {
+                const btnEl = document.getElementById(t.btn);
+                const panelEl = document.getElementById(t.panel);
+                const iconEl = document.getElementById(t.icon);
+                const textEl = document.getElementById(t.text);
+                if (!btnEl || !panelEl) return;
+
+                btnEl.addEventListener('click', () => {
+                    const isHidden = panelEl.classList.toggle('hidden');
+                    if (isHidden) {
+                        iconEl.className = 'fa-solid fa-eye mr-1';
+                        textEl.textContent = '表示する';
+                    } else {
+                        iconEl.className = 'fa-solid fa-eye-slash mr-1';
+                        textEl.textContent = '非表示にする';
+                    }
+                });
+            });
+        }
+        setupPanelToggles();
+
+        // ==========================================
+        // 3. 虹の7色カラーパレット定義
         // ==========================================
         const RAINBOW_COLORS = [
             { key: 'red', name: '赤', hex: '#ef4444', bgSoft: 'bg-red-50', border: 'border-red-500', text: 'text-red-600', badge: 'bg-red-500 text-white' },
@@ -895,7 +957,7 @@
         }
 
         // ==========================================
-        // 3. 6種類のBGM・効果音マネージャー (要件3: 全員同期対応)
+        // 4. 6種類のBGM・効果音マネージャー (Firebase Storage大容量対応版)
         // ==========================================
         let isMuted = false;
         let masterVolume = 0.45;
@@ -903,10 +965,9 @@
         let synthBgmTimer = null;
         let synthStep = 0;
         let isBgmRunning = false;
-        let lastPlayedSoundEvent = { type: '', time: 0 };
 
         const SOUND_DEFS = [
-            { key: 'bgm', label: '① 解答中BGM（ループ）', icon: 'fa-solid fa-music text-cyan-500', loop: true },
+            { key: 'bgm', label: '① 解答中BGM（ループ・大容量可）', icon: 'fa-solid fa-music text-cyan-500', loop: true },
             { key: 'submit', label: '② 解答完了ボタン効果音（SE）', icon: 'fa-solid fa-bell text-orange-500', loop: false },
             { key: 'correct', label: '③ 正解時効果音（SE）', icon: 'fa-regular fa-circle text-red-500', loop: false },
             { key: 'wrong', label: '④ 不正解時効果音（SE）', icon: 'fa-solid fa-xmark text-blue-500', loop: false },
@@ -945,7 +1006,7 @@
                     </div>
                     <div class="flex items-center gap-1.5">
                         <label class="cursor-pointer px-2.5 py-1 bg-white hover:bg-blue-50 border border-blue-300 rounded-lg text-[11px] font-black text-blue-600 transition">
-                            <i class="fa-solid fa-folder-open mr-1"></i>mp3/mp4
+                            <i class="fa-solid fa-folder-open mr-1"></i>ファイル選択
                             <input type="file" data-sound-key="${def.key}" accept=".mp3,.mp4,audio/*,video/mp4" class="sound-file-input hidden">
                         </label>
                         <button type="button" data-test-key="${def.key}" class="sound-test-btn px-2.5 py-1 bg-yellow-400 hover:bg-yellow-500 text-slate-900 rounded-lg text-[11px] font-black transition">
@@ -965,25 +1026,40 @@
                     const key = inp.dataset.soundKey;
                     if (!file || !customMediaPlayers[key] || !currentRoomId) return;
 
-                    const reader = new FileReader();
-                    reader.onload = async (ev) => {
-                        const base64Data = ev.target.result;
-                        customMediaPlayers[key].videoEl.src = base64Data;
+                    showToast("音声ファイルをクラウドにアップロード中...", "info");
+
+                    try {
+                        let mediaUrl = '';
+                        // 5000KB (5MB) 超えるファイルやBGMはFirebase Storageへアップロード
+                        if (key === 'bgm' || file.size > 5000000) {
+                            const sRef = storageRef(storage, `stadium_rooms/${currentRoomId}/${key}_${Date.now()}_${file.name}`);
+                            const snapshot = await uploadBytes(sRef, file);
+                            mediaUrl = await getDownloadURL(snapshot.ref);
+                        } else {
+                            mediaUrl = await new Promise((resolve) => {
+                                const reader = new FileReader();
+                                reader.onload = (ev) => resolve(ev.target.result);
+                                reader.readAsDataURL(file);
+                            });
+                        }
+
+                        customMediaPlayers[key].videoEl.src = mediaUrl;
                         customMediaPlayers[key].hasCustom = true;
                         customMediaPlayers[key].fileName = file.name;
-                        document.getElementById(`sound-name-${key}`).textContent = `📁 ${file.name}`;
+                        document.getElementById(`sound-name-${key}`).textContent = `🎵 ${file.name} (全員共有)`;
 
-                        // 要件3: 誰かがアップロード・設定したらFirestore経由でルーム全員に共有
                         const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
                         await updateDoc(roomRef, {
                             [`sharedAudioConfigs.${key}`]: {
                                 fileName: file.name,
-                                dataUrl: base64Data
+                                dataUrl: mediaUrl
                             }
                         });
-                        showToast(`「${file.name}」を全員のルームに適用しました！`, "success");
-                    };
-                    reader.readAsDataURL(file);
+                        showToast(`「${file.name}」を全員のルームに同期適用しました！`, "success");
+                    } catch (err) {
+                        console.error(err);
+                        showToast("⚠️ 音声のアップロードに失敗しました", "error");
+                    }
                 });
             });
 
@@ -1008,23 +1084,61 @@
                 btn.addEventListener('click', async () => {
                     const key = btn.dataset.resetKey;
                     const slot = customMediaPlayers[key];
-                    if (!slot || !currentRoomId) return;
+                    if (!slot) return;
                     slot.videoEl.pause();
                     slot.videoEl.src = '';
                     slot.hasCustom = false;
                     slot.fileName = '内蔵ゲームサウンド';
                     document.getElementById(`sound-name-${key}`).textContent = '内蔵ゲームサウンド';
 
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                    await updateDoc(roomRef, {
-                        [`sharedAudioConfigs.${key}`]: null
-                    });
+                    if (currentRoomId) {
+                        const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+                        await updateDoc(roomRef, {
+                            [`sharedAudioConfigs.${key}`]: null
+                        });
+                    }
                     showToast("内蔵ゲームサウンドに戻しました", "info");
                 });
             });
         }
 
         initSoundSlotsUI();
+
+        function applySharedAudioConfigs(configs) {
+            if (!configs) return;
+            Object.keys(configs).forEach(key => {
+                const item = configs[key];
+                const slot = customMediaPlayers[key];
+                if (!slot) return;
+
+                if (item && item.dataUrl) {
+                    if (!slot.hasCustom || slot.videoEl.src !== item.dataUrl) {
+                        slot.videoEl.src = item.dataUrl;
+                        slot.hasCustom = true;
+                        slot.fileName = item.fileName || '共有音声ファイル';
+                        const nameEl = document.getElementById(`sound-name-${key}`);
+                        if (nameEl) nameEl.textContent = `🎵 ${slot.fileName} (全員共有)`;
+
+                        if (key === 'bgm' && roomState?.status === 'playing') {
+                            stopQuizBgm();
+                            startQuizBgm();
+                        }
+                    }
+                } else if (!item && slot.hasCustom) {
+                    slot.videoEl.pause();
+                    slot.videoEl.src = '';
+                    slot.hasCustom = false;
+                    slot.fileName = '内蔵ゲームサウンド';
+                    const nameEl = document.getElementById(`sound-name-${key}`);
+                    if (nameEl) nameEl.textContent = '内蔵ゲームサウンド';
+
+                    if (key === 'bgm' && roomState?.status === 'playing') {
+                        stopQuizBgm();
+                        startQuizBgm();
+                    }
+                }
+            });
+        }
 
         function ensureAudioCtx() {
             if (!audioCtx) {
@@ -1220,7 +1334,7 @@
         document.getElementById('btn-mute-audio-mobile').addEventListener('click', toggleMute);
 
         // ==========================================
-        // 4. カットイン・紙吹雪・UIユーティリティ
+        // 5. カットイン・紙吹雪・UIユーティリティ
         // ==========================================
         function triggerCutin(text, colorClass) {
             const layer = document.getElementById('cutin-layer');
@@ -1295,7 +1409,7 @@
         }
 
         // ==========================================
-        // 5. ロビー・ルーム作成・入室・退出
+        // 6. ロビー・ルーム作成・入室・退出
         // ==========================================
         document.querySelectorAll('.lobby-role-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -1317,7 +1431,7 @@
         }
 
         document.getElementById('btn-create-room').addEventListener('click', async () => {
-            if (!currentUser) return showToast("サーバー未接続です。Firebase設定を確認してください。", "warning");
+            if (!currentUser) return showToast("サーバー未接続です。", "warning");
             const nick = document.getElementById('input-nickname').value.trim();
             if (!nick) return showToast("プレイヤー名を入力してください！", "error");
 
@@ -1368,12 +1482,12 @@
                 showToast(`スタジアム「${roomId}」を開設しました！`, "success");
             } catch (err) {
                 console.error(err);
-                showToast("スタジアム開設に失敗しました。Firestoreのルールを確認してください。", "error");
+                showToast("スタジアム開設に失敗しました。", "error");
             }
         });
 
         document.getElementById('btn-join-room').addEventListener('click', async () => {
-            if (!currentUser) return showToast("サーバー未接続です。Firebase設定を確認してください。", "warning");
+            if (!currentUser) return showToast("サーバー未接続です。", "warning");
             const nick = document.getElementById('input-nickname').value.trim();
             const roomId = document.getElementById('input-room-id').value.trim().toUpperCase();
 
@@ -1443,7 +1557,6 @@
             closeFullscreenBoard();
             if (roomUnsubscribe) roomUnsubscribe();
             if (strokesUnsubscribe) strokesUnsubscribe();
-            if (cheersUnsubscribe) cheersUnsubscribe();
             if (countdownInterval) clearInterval(countdownInterval);
 
             try {
@@ -1474,7 +1587,7 @@
         }
 
         // ==========================================
-        // 6. ルーム同期・状態管理
+        // 7. ルーム同期・状態管理
         // ==========================================
         let roomState = null;
         let countdownInterval = null;
@@ -1484,7 +1597,7 @@
         let lastWrongEvent = 0;
         let lastActiveImageIndex = -1;
         let seenStrokeIds = new Set();
-        let seenCheerIds = new Set();
+        let appliedAudioSig = "";
 
         function enterRoom(roomId) {
             currentRoomId = roomId;
@@ -1496,12 +1609,12 @@
             initCanvases();
             initLeaderColorPickerUI();
             seenStrokeIds.clear();
-            seenCheerIds.clear();
             lastClearVer = 0;
             lastSubmitEvent = 0;
             lastCorrectEvent = 0;
             lastWrongEvent = 0;
             lastActiveImageIndex = -1;
+            appliedAudioSig = "";
 
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', roomId);
             roomUnsubscribe = onSnapshot(roomRef, (snap) => {
@@ -1526,19 +1639,6 @@
                 });
             }, (err) => console.error("Strokes snapshot error:", err));
 
-            const cheersCol = collection(db, 'artifacts', appId, 'public', 'data', `stadium_cheers_${roomId}`);
-            cheersUnsubscribe = onSnapshot(cheersCol, (snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added' && !seenCheerIds.has(change.doc.id)) {
-                        seenCheerIds.add(change.doc.id);
-                        const c = change.doc.data();
-                        if (Date.now() - (c.createdAt || 0) < 8000) {
-                            spawnFloatingCheer(c.name, c.text);
-                        }
-                    }
-                });
-            }, (err) => console.error("Cheers snapshot error:", err));
-
             if (countdownInterval) clearInterval(countdownInterval);
             countdownInterval = setInterval(updateCountdown, 250);
         }
@@ -1547,11 +1647,17 @@
             const prevStatus = roomState ? roomState.status : null;
             roomState = data;
 
-            // 要件3: ルーム内の共有音声設定（誰かが設定したBGMや効果音）を自動反映
-            applySharedAudioConfigs(data.sharedAudioConfigs || {});
-
             const me = data.participants?.[currentUser.uid];
             const myRole = me ? me.role : 'spectator';
+
+            // オーディオ設定の同期チェック
+            if (data.sharedAudioConfigs) {
+                const sig = JSON.stringify(data.sharedAudioConfigs);
+                if (sig !== appliedAudioSig) {
+                    appliedAudioSig = sig;
+                    applySharedAudioConfigs(data.sharedAudioConfigs);
+                }
+            }
 
             if (data.clearVersion && data.clearVersion !== lastClearVer) {
                 lastClearVer = data.clearVersion;
@@ -1705,20 +1811,24 @@
                 resBanner.classList.add('hidden');
             }
 
-            document.getElementById('host-panel').classList.toggle('hidden', myRole !== 'host');
-            document.getElementById('host-judge-controls').classList.toggle('hidden', !(myRole === 'host' && data.status === 'playing'));
+            // 司会者パネルの表示制御
+            const hostPanelWrapper = document.getElementById('host-panel').previousElementSibling;
             if (myRole === 'host') {
+                hostPanelWrapper.classList.remove('hidden');
+                document.getElementById('host-panel').classList.remove('hidden');
                 renderHostImageGallery(images, activeImgIdx);
                 renderHostTeamSelectorAndRoster(data);
+            } else {
+                hostPanelWrapper.classList.add('hidden');
+                document.getElementById('host-panel').classList.add('hidden');
             }
+
+            document.getElementById('host-judge-controls').classList.toggle('hidden', !(myRole === 'host' && data.status === 'playing'));
 
             const activeOrder = getEffectiveRelayOrder(data);
             const activeUid = activeOrder.length > 0 ? activeOrder[data.turnIndex % activeOrder.length] : null;
             const activePlayer = activeUid ? data.participants?.[activeUid] : null;
             const isMyTurn = (data.status === 'playing' && activeUid === currentUser.uid && myRole === 'answerer');
-
-            const showCheerBar = (myRole === 'spectator') || (myRole === 'answerer' && !isMyTurn);
-            document.getElementById('spectator-cheer-bar').classList.toggle('hidden', !showCheerBar);
 
             const drawerNameEl = document.getElementById('disp-current-drawer');
             const turnBadgeEl = document.getElementById('turn-instruction-badge');
@@ -1757,7 +1867,6 @@
             document.getElementById('submitted-waiting-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag));
 
             document.getElementById('fs-drawer-toolbar').classList.toggle('hidden', !canDraw);
-            document.getElementById('fs-watcher-toolbar').classList.toggle('hidden', canDraw);
             document.getElementById('fs-spectating-badge').classList.toggle('hidden', canDraw || data.status !== 'playing');
             document.getElementById('fs-submitted-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag));
             document.getElementById('fs-timeup-overlay').classList.toggle('hidden', data.status !== 'gameover');
@@ -1765,31 +1874,6 @@
             renderTeamsSection(data);
             renderClearedFlips(data);
             renderSideLists(data, activeOrder, activeUid);
-        }
-
-        function applySharedAudioConfigs(configs) {
-            Object.keys(configs).forEach(key => {
-                const item = configs[key];
-                const slot = customMediaPlayers[key];
-                if (!slot) return;
-
-                if (item && item.dataUrl) {
-                    if (!slot.hasCustom || slot.videoEl.src !== item.dataUrl) {
-                        slot.videoEl.src = item.dataUrl;
-                        slot.hasCustom = true;
-                        slot.fileName = item.fileName || '共有音声ファイル';
-                        const nameEl = document.getElementById(`sound-name-${key}`);
-                        if (nameEl) nameEl.textContent = `🎵 ${slot.fileName} (全員共有)`;
-                    }
-                } else if (!item && slot.hasCustom) {
-                    slot.videoEl.pause();
-                    slot.videoEl.src = '';
-                    slot.hasCustom = false;
-                    slot.fileName = '内蔵ゲームサウンド';
-                    const nameEl = document.getElementById(`sound-name-${key}`);
-                    if (nameEl) nameEl.textContent = '内蔵ゲームサウンド';
-                }
-            });
         }
 
         function getEffectiveRelayOrder(data) {
@@ -1833,12 +1917,12 @@
                     selectedParticipantUids: selected
                 });
                 const labels = { answerer: '解答者', host: '司会者', spectator: '観覧者' };
-                showToast(`役割を「${labels[newRole]}」に変更しました（チーム所属は維持されます）`, "info");
+                showToast(`役割を「${labels[newRole]}」に変更しました`, "info");
             });
         });
 
         // ==========================================
-        // 7. チームシステム＆チームポイント＆個人ポイント管理
+        // 8. チームシステム＆個人ポイント管理
         // ==========================================
         function initLeaderColorPickerUI() {
             const picker = document.getElementById('leader-color-picker');
@@ -2018,11 +2102,6 @@
                         <button type="button" data-team-id="${t.id}" data-delta="-1" class="team-pt-btn px-1.5 py-0.5 bg-white hover:bg-blue-500 text-blue-600 hover:text-white border border-blue-300 rounded text-[10px] font-black">-1</button>
                         <button type="button" data-team-id="${t.id}" data-delta="1" class="team-pt-btn px-1.5 py-0.5 bg-white hover:bg-red-500 text-red-600 hover:text-white border border-red-300 rounded text-[10px] font-black">+1</button>
                         <button type="button" data-team-id="${t.id}" data-delta="10" class="team-pt-btn px-1.5 py-0.5 bg-white hover:bg-red-500 text-red-600 hover:text-white border border-red-300 rounded text-[10px] font-black">+10</button>
-                        <div class="flex items-center gap-0.5 ml-1">
-                            <input type="number" id="custom-team-pt-${t.id}" value="5" min="1" max="9999" class="w-11 px-1 py-0.5 text-[10px] font-black text-center bg-white border border-slate-300 rounded">
-                            <button type="button" data-team-id="${t.id}" data-sign="1" class="team-custom-pt-btn px-1.5 py-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-[10px] font-black">+</button>
-                            <button type="button" data-team-id="${t.id}" data-sign="-1" class="team-custom-pt-btn px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-[10px] font-black">-</button>
-                        </div>
                     </div>
                 ` : '';
 
@@ -2075,20 +2154,6 @@
                     const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
                     await updateDoc(roomRef, {
                         [`teams.${tId}.points`]: curPts + delta
-                    });
-                });
-            });
-
-            container.querySelectorAll('.team-custom-pt-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const tId = btn.dataset.teamId;
-                    const sign = parseInt(btn.dataset.sign, 10);
-                    const inp = document.getElementById(`custom-team-pt-${tId}`);
-                    const val = Math.max(1, parseInt(inp?.value || '1', 10) || 1);
-                    const curPts = data.teams?.[tId]?.points || 0;
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                    await updateDoc(roomRef, {
-                        [`teams.${tId}.points`]: curPts + (val * sign)
                     });
                 });
             });
@@ -2191,8 +2256,7 @@
         const SAMPLE_QUESTIONS = [
             { q: "日本の都道府県で「山」がつく県をすべて答えよ！", target: 6, time: 60, pts: 100, ref: "山形県、山梨県、富山県、岡山県、山口県、和歌山県" },
             { q: "JR山手線の駅名を6つ答えよ！", target: 6, time: 60, pts: 100, ref: "東京、新橋、品川、渋谷、新宿、池袋、上野、秋葉原 など" },
-            { q: "「十二支（えと）」の動物を6つ答えよ！", target: 6, time: 45, pts: 150, ref: "子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥" },
-            { q: "太陽系の惑星を5つ答えよ！", target: 5, time: 45, pts: 120, ref: "水星、金星、地球、火星、木星、土星、天王星、海王星" }
+            { q: "「十二支（えと）」の動物を6つ答えよ！", target: 6, time: 45, pts: 150, ref: "子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥" }
         ];
         let sampleIdx = 0;
 
@@ -2426,7 +2490,7 @@
             if (!currentRoomId || !roomState) return;
             const activeOrder = getEffectiveRelayOrder(roomState);
             if (activeOrder.length === 0) {
-                return showToast("出場する解答者が0人です！役割やチーム選抜を確認してください。", "error");
+                return showToast("出場する解答者が0人です！", "error");
             }
 
             const qText = document.getElementById('cfg-question').value.trim() || "答えが複数ある問題に挑戦！";
@@ -2458,7 +2522,7 @@
             const updates = await buildClearUpdates(roomState, roomState.clearedFlips || []);
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
             await updateDoc(roomRef, updates);
-            showToast("司会者権限で「強制クリア」を実行しました！", "success");
+            showToast("強制クリアを実行しました！", "success");
         });
 
         document.getElementById('btn-force-gameover').addEventListener('click', async () => {
@@ -2469,7 +2533,7 @@
                 endTime: Date.now(),
                 submittedFlag: false
             });
-            showToast("司会者権限で「強制ゲームオーバー」を実行しました", "warning");
+            showToast("強制ゲームオーバーを実行しました", "warning");
         });
 
         document.getElementById('btn-force-stop').addEventListener('click', async () => {
@@ -2559,7 +2623,7 @@
         }
 
         // ==========================================
-        // 9. カウントダウンタイマー＆動的カラー変化
+        // 9. カウントダウンタイマー
         // ==========================================
         let lastBeep = -1;
         let hasTriggeredLocalTimeup = false;
@@ -2577,38 +2641,12 @@
 
         function getTimerColorStyle(rem, totalLimit) {
             if (rem <= 10) {
-                return {
-                    textCls: 'text-red-500',
-                    iconCls: 'text-red-500',
-                    borderCls: 'border-red-500',
-                    bgCls: 'bg-red-50'
-                };
+                return { textCls: 'text-red-500', iconCls: 'text-red-500', borderCls: 'border-red-500', bgCls: 'bg-red-50' };
             }
             if (rem <= 30) {
-                return {
-                    textCls: 'text-yellow-500',
-                    iconCls: 'text-yellow-500',
-                    borderCls: 'border-yellow-400',
-                    bgCls: 'bg-yellow-50'
-                };
+                return { textCls: 'text-yellow-500', iconCls: 'text-yellow-500', borderCls: 'border-yellow-400', bgCls: 'bg-yellow-50' };
             }
-            const overThirty = Math.max(0, totalLimit - 30);
-            const boundary = 30 + Math.floor(overThirty / 2);
-            if (rem > boundary) {
-                return {
-                    textCls: 'text-blue-500',
-                    iconCls: 'text-blue-500',
-                    borderCls: 'border-blue-500',
-                    bgCls: 'bg-white'
-                };
-            } else {
-                return {
-                    textCls: 'text-green-500',
-                    iconCls: 'text-green-500',
-                    borderCls: 'border-green-500',
-                    bgCls: 'bg-white'
-                };
-            }
+            return { textCls: 'text-blue-500', iconCls: 'text-blue-500', borderCls: 'border-blue-500', bgCls: 'bg-white' };
         }
 
         function applyTimerAppearance(rem, totalLimit) {
@@ -2657,7 +2695,6 @@
 
                 if (rem === 0) {
                     triggerTimeupEffectsOnce();
-
                     const me = roomState.participants?.[currentUser.uid];
                     if (me && me.role === 'host') {
                         const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
@@ -2676,7 +2713,7 @@
         }
 
         // ==========================================
-        // 10. 通常＆全画面 デュアル同期手書きキャンバス
+        // 10. 手書きキャンバス
         // ==========================================
         const liveCanvas = document.getElementById('relay-live-canvas');
         const liveCtx = liveCanvas.getContext('2d');
@@ -2936,7 +2973,7 @@
         document.getElementById('btn-exit-fullscreen').addEventListener('click', closeFullscreenBoard);
 
         // ==========================================
-        // 11. 正解フリップ一覧＆解答順番・個人ポイント増減描画
+        // 11. フリップ＆サイドリスト描画
         // ==========================================
         function renderClearedFlips(data) {
             const grid = document.getElementById('cleared-flips-grid');
@@ -2999,11 +3036,6 @@
                             <button type="button" data-user-uid="${uid}" data-delta="-1" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-blue-500 text-blue-600 hover:text-white border border-blue-300 rounded text-[9px] font-black">-1</button>
                             <button type="button" data-user-uid="${uid}" data-delta="1" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-red-500 text-red-600 hover:text-white border border-red-300 rounded text-[9px] font-black">+1</button>
                             <button type="button" data-user-uid="${uid}" data-delta="10" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-red-500 text-red-600 hover:text-white border border-red-300 rounded text-[9px] font-black">+10</button>
-                            <div class="flex items-center gap-0.5 ml-0.5">
-                                <input type="number" id="custom-user-pt-${uid}" value="5" min="1" max="9999" class="w-10 px-1 py-0.5 text-[9px] font-black text-center bg-white border border-slate-300 rounded">
-                                <button type="button" data-user-uid="${uid}" data-sign="1" class="user-custom-pt-btn px-1.5 py-0.5 bg-red-500 hover:bg-red-600 text-white rounded text-[9px] font-black">+</button>
-                                <button type="button" data-user-uid="${uid}" data-sign="-1" class="user-custom-pt-btn px-1.5 py-0.5 bg-blue-500 hover:bg-blue-600 text-white rounded text-[9px] font-black">-</button>
-                            </div>
                         </div>
                     ` : '';
 
@@ -3044,20 +3076,6 @@
                         });
                     });
                 });
-
-                orderUl.querySelectorAll('.user-custom-pt-btn').forEach(btn => {
-                    btn.addEventListener('click', async () => {
-                        const targetUid = btn.dataset.userUid;
-                        const sign = parseInt(btn.dataset.sign, 10);
-                        const inp = document.getElementById(`custom-user-pt-${targetUid}`);
-                        const val = Math.max(1, parseInt(inp?.value || '1', 10) || 1);
-                        const cur = participants[targetUid]?.score || 0;
-                        const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                        await updateDoc(roomRef, {
-                            [`participants.${targetUid}.score`]: cur + (val * sign)
-                        });
-                    });
-                });
             }
 
             const allP = Object.values(participants);
@@ -3083,38 +3101,6 @@
                     </li>
                 `;
             }).join('') || '<li class="text-slate-400 italic px-1">なし</li>';
-        }
-
-        // ==========================================
-        // 12. 応援リアクション送信＆フローティング演出
-        // ==========================================
-        document.querySelectorAll('.cheer-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (!currentRoomId || !currentUser) return;
-                const cheersCol = collection(db, 'artifacts', appId, 'public', 'data', `stadium_cheers_${currentRoomId}`);
-                await addDoc(cheersCol, {
-                    name: myNickname,
-                    text: btn.dataset.cheer,
-                    createdAt: Date.now()
-                });
-            });
-        });
-
-        function spawnFloatingCheer(senderName, text) {
-            const layer = document.getElementById('cheer-floating-layer');
-            const el = document.createElement('div');
-            const leftPct = 15 + Math.random() * 70;
-            el.style.left = `${leftPct}%`;
-            el.style.bottom = '24px';
-            el.className = 'absolute rainbow-border-panel text-slate-800 px-3.5 py-1.5 rounded-full shadow-lg font-black text-xs sm:text-sm whitespace-nowrap transition-all duration-1000 ease-out';
-            el.innerHTML = `<span class="text-purple-600 mr-1">${escapeHtml(senderName)}:</span>${escapeHtml(text)}`;
-            layer.appendChild(el);
-
-            requestAnimationFrame(() => {
-                el.style.transform = 'translateY(-180px)';
-                el.style.opacity = '0';
-            });
-            setTimeout(() => el.remove(), 1100);
         }
     </script>
 </body>
