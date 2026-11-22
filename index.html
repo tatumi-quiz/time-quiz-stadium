@@ -115,66 +115,6 @@
         .red-alert-screen {
             animation: redAlertPulse 0.75s infinite;
         }
-        /* スマホ横画面（ランドスケープ）時のキャンバス・レイアウト完全最適化 */
-        @media (orientation: landscape) and (max-height: 600px) {
-            body {
-                padding: 0.15rem 0.25rem;
-            }
-            #fullscreen-board-modal {
-                padding: 0.15rem 0.5rem;
-                gap: 0.15rem;
-            }
-            #fs-top-hud {
-                padding: 0.15rem 0.5rem !important;
-                border-width: 2px !important;
-                border-radius: 0.5rem !important;
-            }
-            #fs-question-bar {
-                display: none !important;
-            }
-            #fs-canvas-wrapper {
-                margin: 0 !important;
-                padding: 0 !important;
-                flex: 1 1 auto !important;
-                min-height: 0 !important;
-                max-height: calc(100dvh - 90px) !important;
-            }
-            #fs-canvas-container {
-                height: 100% !important;
-                max-height: 100% !important;
-                width: auto !important;
-                max-width: 100% !important;
-                aspect-ratio: 16 / 9 !important;
-                border-width: 3px !important;
-            }
-            #fs-drawer-toolbar {
-                position: fixed !important;
-                right: 12px !important;
-                top: 60px !important;
-                bottom: 12px !important;
-                width: auto !important;
-                max-width: 160px !important;
-                flex-direction: column !important;
-                justify-content: center !important;
-                background: rgba(255, 255, 255, 0.96) !important;
-                backdrop-filter: blur(6px);
-                padding: 0.5rem !important;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
-                z-index: 80 !important;
-                border-radius: 1rem !important;
-            }
-            #fs-drawer-toolbar .flex.items-center.gap-2 {
-                flex-direction: column !important;
-                gap: 0.5rem !important;
-                width: 100% !important;
-            }
-            #fs-drawer-toolbar button[id^="btn-fs-"] {
-                width: 100% !important;
-                padding: 0.5rem !important;
-                font-size: 0.8rem !important;
-                justify-content: center;
-            }
-        }
         @keyframes confettiFall {
             0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
             100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
@@ -281,51 +221,50 @@
             <span id="fs-question-ticker" class="text-xs sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
         </div>
 
-        <!-- 全画面メイン手書きキャンバス -->
-        <div id="fs-canvas-wrapper" class="relative flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden my-1">
-            <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full h-full rounded-2xl overflow-hidden border-4 border-cyan-500 bg-white shadow-xl flex items-center justify-center">
-                <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
+        <!-- 全画面メインコンテンツ領域（要件3: PC・スマホ共通で右側に操作ツールバーを配置し、キャンバスを16:9で最大化） -->
+        <div id="fs-main-content-area" class="relative flex-1 min-h-0 w-full flex flex-row items-center justify-center gap-2 sm:gap-4 overflow-hidden my-1">
+            
+            <!-- 16:9キャンバス保持コンテナ -->
+            <div id="fs-canvas-wrapper" class="relative flex-1 h-full max-h-full min-w-0 flex items-center justify-center">
+                <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full h-full rounded-2xl overflow-hidden border-4 border-cyan-500 bg-white shadow-xl flex items-center justify-center">
+                    <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
 
-                <div id="fs-spectating-badge" class="hidden absolute top-3 left-3 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1.5 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
-                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
-                </div>
+                    <div id="fs-spectating-badge" class="hidden absolute top-3 left-3 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1.5 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
+                    </div>
 
-                <div id="fs-submitted-overlay" class="hidden absolute inset-0 bg-white/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center z-10">
-                    <div class="bg-white border-4 border-orange-400 px-6 py-4 rounded-2xl shadow-xl animate-pop">
-                        <div class="text-orange-500 font-black text-lg sm:text-xl mb-1">
-                            <i class="fa-solid fa-gavel fa-bounce mr-1.5"></i>解答完了！司会者判定中...
+                    <!-- 要友1: 位置を下部に変更し、背景のぼかしを消して文字を見やすく修正 -->
+                    <div id="fs-submitted-overlay" class="hidden absolute inset-0 pointer-events-none bg-transparent flex flex-col items-center justify-end p-3 pb-3 sm:pb-4 z-20">
+                        <div class="bg-white/95 border-3 border-orange-400 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl shadow-2xl animate-pop backdrop-blur-sm pointer-events-auto text-center">
+                            <div class="text-orange-600 font-black text-xs sm:text-base flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-gavel fa-bounce"></i> 解答完了！司会者判定中...
+                            </div>
+                            <p class="text-[10px] sm:text-xs text-slate-600 font-bold mt-0.5">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
                         </div>
-                        <p class="text-xs text-slate-600 font-bold">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
                     </div>
-                </div>
 
-                <div id="fs-timeup-overlay" class="hidden absolute inset-0 bg-purple-900/75 backdrop-blur-xs flex items-center justify-center p-4 z-20">
-                    <div class="bg-white border-4 border-red-500 px-6 py-5 rounded-3xl text-center shadow-2xl animate-pop">
-                        <div class="text-4xl sm:text-5xl mb-1">⏰💦</div>
-                        <div class="text-red-500 font-black text-2xl sm:text-4xl tracking-wider">TIME UP!!</div>
-                        <p class="text-xs sm:text-sm font-extrabold text-slate-600 mt-1">制限時間終了！</p>
+                    <div id="fs-timeup-overlay" class="hidden absolute inset-0 bg-purple-900/75 backdrop-blur-xs flex items-center justify-center p-4 z-20">
+                        <div class="bg-white border-4 border-red-500 px-6 py-5 rounded-3xl text-center shadow-2xl animate-pop">
+                            <div class="text-4xl sm:text-5xl mb-1">⏰💦</div>
+                            <div class="text-red-500 font-black text-2xl sm:text-4xl tracking-wider">TIME UP!!</div>
+                            <p class="text-xs sm:text-sm font-extrabold text-slate-600 mt-1">制限時間終了！</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 全画面ボトムツールバー（黒ペン固定＆全消し・解答完了ボタンのみでスッキリ化） -->
-        <div class="mt-0.5 shrink-0">
-            <div id="fs-drawer-toolbar" class="hidden max-w-4xl mx-auto rainbow-border-panel rounded-2xl p-2.5 flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2">
-                    <span class="inline-flex items-center gap-1.5 bg-slate-900 text-white font-black text-xs px-3 py-2 rounded-xl shadow">
-                        <span class="w-3 h-3 rounded-full bg-white inline-block"></span> 黒ペン（標準）
-                    </span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="btn-fs-clear" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
-                        <i class="fa-solid fa-trash-can mr-1"></i>全消し
-                    </button>
-                    <button id="btn-fs-submit" class="px-5 sm:px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
-                        <i class="fa-solid fa-bell mr-1"></i>解答完了！
-                    </button>
-                </div>
+            <!-- 右側配置の全画面ツールバー（要件2&3: 黒ペンUI削除、右側縦並び配置） -->
+            <div id="fs-drawer-toolbar" class="hidden flex-col items-center justify-center gap-2.5 sm:gap-3 bg-white/95 border-2 border-cyan-300 p-2.5 sm:p-4 rounded-2xl shadow-lg shrink-0 h-auto max-h-full">
+                <button id="btn-fs-clear" class="w-full px-3.5 sm:px-5 py-2.5 sm:py-3.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn flex items-center justify-center gap-1.5 whitespace-nowrap shadow-md">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>全消し</span>
+                </button>
+                <button id="btn-fs-submit" class="w-full px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn flex items-center justify-center gap-1.5 whitespace-nowrap shadow-md">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>解答完了！</span>
+                </button>
             </div>
+
         </div>
     </div>
 
@@ -648,13 +587,51 @@
                         </div>
                     </div>
 
-                    <!-- タブ4：6種類のBGM・効果音設定（アップロード進捗％表示対応版） -->
-                    <div id="tab-sounds" class="host-tab-content hidden space-y-2 text-xs mb-3">
-                        <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-2.5 text-blue-800 font-bold leading-relaxed mb-2">
-                            <i class="fa-solid fa-circle-info mr-1"></i> <strong>BGMアップロード進捗表示対応！</strong><br>
-                            ファイル選択時にアップロードの進捗率（％）がリアルタイムで表示され、完了後に全員のルームへ同期されます。
+                    <!-- タブ4：6種類のBGM・効果音設定＆要件4: 解答中BGMライブラリ複数ストック・ワンクリック切替共有機能 -->
+                    <div id="tab-sounds" class="host-tab-content hidden space-y-3 text-xs mb-3">
+                        
+                        <!-- 解答中BGM複数保存＆ワンクリック切替・共有セクション -->
+                        <div class="bg-cyan-50 border-2 border-cyan-400 rounded-2xl p-3 space-y-2 shadow-sm">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <div class="font-black text-cyan-800 text-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-music text-cyan-600"></i>
+                                    <span>① 解答中BGM（複数ストック＆ワンクリック全員共有）</span>
+                                </div>
+                                <label class="cursor-pointer px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-xs font-black transition game-btn flex items-center gap-1">
+                                    <i class="fa-solid fa-plus"></i> BGMを追加
+                                    <input type="file" id="bgm-library-file-input" accept=".mp3,.mp4,audio/*,video/mp4" class="hidden">
+                                </label>
+                            </div>
+
+                            <!-- アップロード進捗表示バー -->
+                            <div id="bgm-upload-progress-box" class="hidden w-full bg-white p-2 rounded-xl border border-cyan-200">
+                                <div class="flex justify-between text-[10px] font-black text-cyan-700 mb-1">
+                                    <span id="bgm-upload-status-text">BGMアップロード中...</span>
+                                    <span id="bgm-upload-pct-text">0%</span>
+                                </div>
+                                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-cyan-200">
+                                    <div id="bgm-upload-bar" class="h-full rainbow-gradient-bar transition-all duration-150" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- ストック中BGMリスト -->
+                            <div id="bgm-library-container" class="space-y-1.5 max-h-48 overflow-y-auto pr-1"></div>
+
+                            <div class="flex items-center justify-between pt-1 border-t border-cyan-200/80 text-[11px]">
+                                <span class="text-slate-500 font-bold">「全員に適用」を押すと即座にルーム内の全プレイヤーへリアルタイム共有されます。</span>
+                                <button type="button" id="btn-reset-bgm-default" class="text-slate-500 hover:text-red-500 font-bold underline">
+                                    内蔵BGMに戻す
+                                </button>
+                            </div>
                         </div>
-                        <div id="sound-slots-container" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
+
+                        <!-- 効果音（SE）設定セクション -->
+                        <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-2.5">
+                            <div class="font-black text-slate-700 text-xs mb-2">
+                                <i class="fa-solid fa-bolt text-yellow-500 mr-1"></i>②〜⑥ 効果音（SE）設定
+                            </div>
+                            <div id="se-slots-container" class="space-y-1.5 max-h-44 overflow-y-auto pr-1"></div>
+                        </div>
                     </div>
 
                     <!-- リレー開始・強制クリア・強制ゲームオーバー・リセットボタン群 -->
@@ -699,32 +676,25 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ中継中
                         </div>
 
-                        <div id="submitted-waiting-overlay" class="hidden absolute inset-0 bg-white/75 backdrop-blur-[1px] flex flex-col items-center justify-center p-4 text-center">
-                            <div class="bg-white border-4 border-orange-400 px-6 py-4 rounded-2xl shadow-xl animate-pop">
-                                <div class="text-orange-500 font-black text-lg sm:text-xl mb-1">
-                                    <i class="fa-solid fa-gavel fa-bounce mr-1.5"></i>解答完了！司会者判定中...
+                        <!-- 要件1: 位置を下部に変更し、背景のぼかしを消して文字を見やすく修正 -->
+                        <div id="submitted-waiting-overlay" class="hidden absolute inset-0 pointer-events-none bg-transparent flex flex-col items-center justify-end p-3 pb-3 sm:pb-4 z-20">
+                            <div class="bg-white/95 border-3 border-orange-400 px-4 py-2 sm:px-6 sm:py-3 rounded-2xl shadow-2xl animate-pop backdrop-blur-sm pointer-events-auto text-center">
+                                <div class="text-orange-600 font-black text-xs sm:text-base flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-gavel fa-bounce"></i> 解答完了！司会者判定中...
                                 </div>
-                                <p class="text-xs text-slate-600 font-bold">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
+                                <p class="text-[10px] sm:text-xs text-slate-600 font-bold mt-0.5">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 解答者用ツール（黒ペン固定＆全消し・解答完了ボタン） -->
-                    <div id="answerer-controls" class="hidden max-w-2xl mx-auto mt-3 flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border-2 border-blue-300">
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center gap-1.5 bg-slate-900 text-white font-black text-xs px-3 py-2 rounded-xl shadow">
-                                <span class="w-3 h-3 rounded-full bg-white inline-block"></span> 黒ペン（標準）
-                            </span>
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <button id="btn-canvas-clear" class="px-3.5 py-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs game-btn">
-                                <i class="fa-solid fa-trash-can mr-1"></i>全消去
-                            </button>
-                            <button id="btn-submit-answer" class="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
-                                <i class="fa-solid fa-bell mr-1"></i> 解答完了！
-                            </button>
-                        </div>
+                    <!-- 要件2: 解答者用ツール（黒ペン標準バッジを削除して全消し・解答完了ボタンのみにスッキリ化） -->
+                    <div id="answerer-controls" class="hidden max-w-2xl mx-auto mt-3 flex items-center justify-end gap-2 bg-slate-50 p-2.5 rounded-xl border-2 border-blue-300">
+                        <button id="btn-canvas-clear" class="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                            <i class="fa-solid fa-trash-can mr-1"></i>全消去
+                        </button>
+                        <button id="btn-submit-answer" class="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                            <i class="fa-solid fa-bell mr-1"></i> 解答完了！
+                        </button>
                     </div>
 
                     <!-- 司会者用 ○×判定ボタン -->
@@ -977,7 +947,7 @@
         }
 
         // ==========================================
-        // 4. 6種類のBGM・効果音マネージャー (アップロード進捗％表示対応)
+        // 4. 音響マネージャー (要件4: 解答中BGMライブラリ対応)
         // ==========================================
         let isMuted = false;
         let masterVolume = 0.45;
@@ -986,22 +956,37 @@
         let synthStep = 0;
         let isBgmRunning = false;
 
-        const SOUND_DEFS = [
-            { key: 'bgm', label: '① 解答中BGM（大容量可・ループなし）', icon: 'fa-solid fa-music text-cyan-500', loop: false },
-            { key: 'submit', label: '② 解答完了ボタン効果音（SE）', icon: 'fa-solid fa-bell text-orange-500', loop: false },
-            { key: 'correct', label: '③ 正解時効果音（SE）', icon: 'fa-regular fa-circle text-red-500', loop: false },
-            { key: 'wrong', label: '④ 不正解時効果音（SE）', icon: 'fa-solid fa-xmark text-blue-500', loop: false },
-            { key: 'timeup', label: '⑤ タイムアップ音・BGM', icon: 'fa-solid fa-hourglass-end text-purple-500', loop: false },
-            { key: 'clear', label: '⑥ ステージクリア音・BGM', icon: 'fa-solid fa-trophy text-green-500', loop: false }
+        const SE_DEFS = [
+            { key: 'submit', label: '② 解答完了ボタン効果音（SE）', icon: 'fa-solid fa-bell text-orange-500' },
+            { key: 'correct', label: '③ 正解時効果音（SE）', icon: 'fa-regular fa-circle text-red-500' },
+            { key: 'wrong', label: '④ 不正解時効果音（SE）', icon: 'fa-solid fa-xmark text-blue-500' },
+            { key: 'timeup', label: '⑤ タイムアップ音・BGM', icon: 'fa-solid fa-hourglass-end text-purple-500' },
+            { key: 'clear', label: '⑥ ステージクリア音・BGM', icon: 'fa-solid fa-trophy text-green-500' }
         ];
 
         const customMediaPlayers = {};
 
-        function initSoundSlotsUI() {
-            const container = document.getElementById('sound-slots-container');
+        // BGM専用プレイヤーエレメントの初期化
+        const bgmVideoEl = document.createElement('video');
+        bgmVideoEl.className = 'hidden';
+        bgmVideoEl.playsInline = true;
+        bgmVideoEl.preload = 'auto';
+        bgmVideoEl.crossOrigin = 'anonymous';
+        bgmVideoEl.loop = false;
+        document.body.appendChild(bgmVideoEl);
+
+        customMediaPlayers['bgm'] = {
+            videoEl: bgmVideoEl,
+            hasCustom: false,
+            currentUrl: '',
+            fileName: '内蔵ゲームサウンド'
+        };
+
+        function initSESlotsUI() {
+            const container = document.getElementById('se-slots-container');
             container.innerHTML = '';
 
-            SOUND_DEFS.forEach(def => {
+            SE_DEFS.forEach(def => {
                 const videoEl = document.createElement('video');
                 videoEl.className = 'hidden';
                 videoEl.playsInline = true;
@@ -1018,14 +1003,13 @@
                 };
 
                 const row = document.createElement('div');
-                row.className = 'bg-slate-50 border border-slate-200 rounded-xl p-2 flex flex-wrap items-center justify-between gap-2';
+                row.className = 'bg-white border border-slate-200 rounded-xl p-2 flex flex-wrap items-center justify-between gap-2';
                 row.innerHTML = `
                     <div class="flex items-center gap-2 min-w-0 flex-1">
                         <i class="${def.icon} w-4 text-center"></i>
                         <div class="truncate w-full">
                             <div class="font-black text-slate-800 text-xs">${def.label}</div>
                             <div id="sound-name-${def.key}" class="text-[10px] text-green-600 font-bold truncate">内蔵ゲームサウンド</div>
-                            <!-- 要望2: アップロード進捗表示バー -->
                             <div id="upload-progress-box-${def.key}" class="hidden w-full mt-1">
                                 <div class="flex justify-between text-[9px] font-black text-blue-600 mb-0.5">
                                     <span id="upload-status-text-${def.key}">アップロード中...</span>
@@ -1038,8 +1022,8 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <label id="sound-label-${def.key}" class="cursor-pointer px-2.5 py-1 bg-white hover:bg-blue-50 border border-blue-300 rounded-lg text-[11px] font-black text-blue-600 transition">
-                            <i class="fa-solid fa-folder-open mr-1"></i>ファイル選択
+                        <label class="cursor-pointer px-2.5 py-1 bg-white hover:bg-blue-50 border border-blue-300 rounded-lg text-[11px] font-black text-blue-600 transition">
+                            <i class="fa-solid fa-folder-open mr-1"></i>選択
                             <input type="file" data-sound-key="${def.key}" accept=".mp3,.mp4,audio/*,video/mp4" class="sound-file-input hidden">
                         </label>
                         <button type="button" data-test-key="${def.key}" class="sound-test-btn px-2.5 py-1 bg-yellow-400 hover:bg-yellow-500 text-slate-900 rounded-lg text-[11px] font-black transition">
@@ -1073,27 +1057,23 @@
                         const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
                         const sRef = storageRef(storage, `stadium_rooms/${currentRoomId}/${key}_${Date.now()}_${safeFileName}`);
                         const metadata = { contentType: file.type || (file.name.endsWith('.mp4') ? 'video/mp4' : 'audio/mpeg') };
-                        
+
                         const uploadTask = uploadBytesResumable(sRef, file, metadata);
 
                         mediaUrl = await new Promise((resolve, reject) => {
-                            uploadTask.on('state_changed', 
+                            uploadTask.on('state_changed',
                                 (snapshot) => {
                                     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
                                     progressBar.style.width = `${progress}%`;
                                     progressPct.textContent = `${progress}%`;
                                     statusText.textContent = progress === 100 ? 'クラウド同期中...' : 'アップロード中...';
-                                }, 
-                                (error) => {
-                                    reject(error);
-                                }, 
+                                },
+                                (error) => reject(error),
                                 async () => {
                                     try {
                                         const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
                                         resolve(downloadUrl);
-                                    } catch (err) {
-                                        reject(err);
-                                    }
+                                    } catch (err) { reject(err); }
                                 }
                             );
                         });
@@ -1116,11 +1096,9 @@
                         showToast(`「${file.name}」を全員のルームに同期適用しました！`, "success");
                     } catch (err) {
                         console.error(err);
-                        showToast("⚠️ 音声の共有に失敗しました（Storage権限を確認してください）", "error");
+                        showToast("⚠️ 音声の共有に失敗しました", "error");
                     } finally {
-                        setTimeout(() => {
-                            progressBox.classList.add('hidden');
-                        }, 1200);
+                        setTimeout(() => progressBox.classList.add('hidden'), 1200);
                         e.target.value = '';
                     }
                 });
@@ -1129,17 +1107,7 @@
             container.querySelectorAll('.sound-test-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const key = btn.dataset.testKey;
-                    if (key === 'bgm') {
-                        if (synthBgmTimer || (customMediaPlayers.bgm.hasCustom && !customMediaPlayers.bgm.videoEl.paused)) {
-                            stopQuizBgm();
-                            btn.innerHTML = '<i class="fa-solid fa-play"></i> 試聴';
-                        } else {
-                            startQuizBgm();
-                            btn.innerHTML = '<i class="fa-solid fa-stop"></i> 停止';
-                        }
-                    } else {
-                        playGameEventSound(key);
-                    }
+                    playGameEventSound(key);
                 });
             });
 
@@ -1167,7 +1135,188 @@
             });
         }
 
-        initSoundSlotsUI();
+        initSESlotsUI();
+
+        // ==========================================
+        // 要件4: 解答中BGMライブラリ・アップロード・選択共有機能
+        // ==========================================
+        document.getElementById('bgm-library-file-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentRoomId || !roomState) return;
+
+            const progressBox = document.getElementById('bgm-upload-progress-box');
+            const progressBar = document.getElementById('bgm-upload-bar');
+            const progressPct = document.getElementById('bgm-upload-pct-text');
+            const statusText = document.getElementById('bgm-upload-status-text');
+
+            progressBox.classList.remove('hidden');
+            progressBar.style.width = '0%';
+            progressPct.textContent = '0%';
+            statusText.textContent = 'BGMアップロード中...';
+
+            try {
+                const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                const sRef = storageRef(storage, `stadium_rooms/${currentRoomId}/bgm_lib_${Date.now()}_${safeFileName}`);
+                const metadata = { contentType: file.type || 'audio/mpeg' };
+
+                const uploadTask = uploadBytesResumable(sRef, file, metadata);
+
+                const downloadUrl = await new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed',
+                        (snapshot) => {
+                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                            progressBar.style.width = `${progress}%`;
+                            progressPct.textContent = `${progress}%`;
+                            statusText.textContent = progress === 100 ? 'ライブラリ登録中...' : 'BGMアップロード中...';
+                        },
+                        (error) => reject(error),
+                        async () => {
+                            try {
+                                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                                resolve(url);
+                            } catch (err) { reject(err); }
+                        }
+                    );
+                });
+
+                const newItem = {
+                    id: `bgm_${Date.now()}`,
+                    name: file.name,
+                    url: downloadUrl,
+                    createdAt: Date.now()
+                };
+
+                const bgmList = [...(roomState.bgmLibrary || []), newItem];
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+
+                // もしライブラリが初めてなら自動的にこの曲を適用
+                const updates = { bgmLibrary: bgmList };
+                if (!roomState.sharedAudioConfigs?.bgm) {
+                    updates['sharedAudioConfigs.bgm'] = {
+                        fileName: newItem.name,
+                        dataUrl: newItem.url,
+                        updatedAt: Date.now()
+                    };
+                }
+
+                await updateDoc(roomRef, updates);
+                showToast(`BGM「${file.name}」をライブラリに追加しました！`, "success");
+            } catch (err) {
+                console.error(err);
+                showToast("⚠️ BGMのアップロードに失敗しました", "error");
+            } finally {
+                setTimeout(() => progressBox.classList.add('hidden'), 1000);
+                e.target.value = '';
+            }
+        });
+
+        document.getElementById('btn-reset-bgm-default').addEventListener('click', async () => {
+            if (!currentRoomId) return;
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+            await updateDoc(roomRef, {
+                'sharedAudioConfigs.bgm': null
+            });
+            showToast("BGMを内蔵テーマ音に戻しました", "info");
+        });
+
+        function renderBGMLibraryList(bgmList, activeBgmConfig) {
+            const container = document.getElementById('bgm-library-container');
+            container.innerHTML = '';
+
+            if (!bgmList || bgmList.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-3 rounded-xl border border-cyan-200 text-center text-slate-400 font-bold text-xs">
+                        ストックされているBGMはありません。「+ BGMを追加」ボタンからMP3等のファイルを追加してください。
+                    </div>
+                `;
+                return;
+            }
+
+            bgmList.forEach(item => {
+                const isActive = activeBgmConfig && activeBgmConfig.dataUrl === item.url;
+                const row = document.createElement('div');
+                row.className = `p-2 rounded-xl border flex items-center justify-between gap-2 transition ${
+                    isActive ? 'bg-cyan-100 border-cyan-500 shadow-sm' : 'bg-white border-slate-200'
+                }`;
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <i class="fa-solid fa-compact-disc ${isActive ? 'fa-spin text-cyan-600' : 'text-slate-400'} text-base"></i>
+                        <div class="truncate">
+                            <div class="font-black text-slate-800 text-xs truncate">${escapeHtml(item.name)}</div>
+                            ${isActive ? '<span class="bg-cyan-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded">全画面共有・適用中</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button type="button" data-preview-url="${item.url}" class="btn-preview-bgm px-2.5 py-1 bg-yellow-400 hover:bg-yellow-500 text-slate-900 rounded-lg text-[11px] font-black transition">
+                            <i class="fa-solid fa-play"></i> 試聴
+                        </button>
+                        <button type="button" data-apply-bgm-id="${item.id}" class="btn-apply-bgm px-2.5 py-1 ${isActive ? 'bg-green-500 text-white' : 'bg-cyan-500 hover:bg-cyan-600 text-white'} rounded-lg text-[11px] font-black transition game-btn">
+                            <i class="fa-solid fa-share-nodes mr-1"></i>${isActive ? '適用中' : '選択・全員に適用'}
+                        </button>
+                        <button type="button" data-delete-bgm-id="${item.id}" class="btn-delete-bgm p-1 text-slate-400 hover:text-red-500 transition" title="ライブラリから削除">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+
+            // 試聴ボタン
+            container.querySelectorAll('.btn-preview-bgm').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.dataset.previewUrl;
+                    if (!customMediaPlayers.bgm.videoEl.paused && customMediaPlayers.bgm.currentUrl === url) {
+                        customMediaPlayers.bgm.videoEl.pause();
+                        btn.innerHTML = '<i class="fa-solid fa-play"></i> 試聴';
+                    } else {
+                        customMediaPlayers.bgm.videoEl.pause();
+                        customMediaPlayers.bgm.videoEl.src = url;
+                        customMediaPlayers.bgm.currentUrl = url;
+                        customMediaPlayers.bgm.videoEl.volume = masterVolume;
+                        customMediaPlayers.bgm.videoEl.play().catch(() => {});
+                        btn.innerHTML = '<i class="fa-solid fa-stop"></i> 停止';
+                    }
+                });
+            });
+
+            // 全員に適用ボタン
+            container.querySelectorAll('.btn-apply-bgm').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.datasetApplyBgmId;
+                    const item = bgmList.find(b => b.id === id);
+                    if (!item || !currentRoomId) return;
+
+                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+                    await updateDoc(roomRef, {
+                        'sharedAudioConfigs.bgm': {
+                            fileName: item.name,
+                            dataUrl: item.url,
+                            updatedAt: Date.now()
+                        }
+                    });
+                    showToast(`BGM「${item.name}」を全員のルームに共有・適用しました！`, "success");
+                });
+            });
+
+            // 削除ボタン
+            container.querySelectorAll('.btn-delete-bgm').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.datasetDeleteBgmId;
+                    const item = bgmList.find(b => b.id === id);
+                    if (!item || !currentRoomId) return;
+
+                    const nextList = bgmList.filter(b => b.id !== id);
+                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+                    const updates = { bgmLibrary: nextList };
+                    if (activeBgmConfig && activeBgmConfig.dataUrl === item.url) {
+                        updates['sharedAudioConfigs.bgm'] = null;
+                    }
+                    await updateDoc(roomRef, updates);
+                    showToast("BGMを削除しました", "info");
+                });
+            });
+        }
 
         function applySharedAudioConfigs(configs) {
             if (!configs) return;
@@ -1550,6 +1699,7 @@
                     problemImages: [],
                     activeImageIndex: -1,
                     sharedAudioConfigs: {},
+                    bgmLibrary: [],
                     endTime: 0,
                     turnIndex: 0,
                     submittedFlag: false,
@@ -1682,7 +1832,7 @@
         }
 
         // ==========================================
-        // 7. ルーム同期・状態管理 (要望3のバグ修正版)
+        // 7. ルーム同期・状態管理
         // ==========================================
         let roomState = null;
         let countdownInterval = null;
@@ -1694,7 +1844,6 @@
         let seenStrokeIds = new Set();
         let appliedAudioSig = "";
 
-        // 司会者パネルのユーザーによる手動開閉状態を保持（判定時の強制オープンを防止するため）
         let isHostPanelManuallyToggled = false;
 
         document.getElementById('btn-toggle-host-panel').addEventListener('click', () => {
@@ -1916,7 +2065,6 @@
             const hostPanelEl = document.getElementById('host-panel');
             if (myRole === 'host') {
                 hostPanelWrapper.classList.remove('hidden');
-                // 要望3修正：ユーザーが手動で非表示にしていた場合は、ルーム同期で勝手に再表示されないようにする
                 if (!isHostPanelManuallyToggled) {
                     hostPanelEl.classList.remove('hidden');
                     document.getElementById('host-panel-toggle-icon').className = 'fa-solid fa-eye-slash mr-1';
@@ -1924,6 +2072,7 @@
                 }
                 renderHostImageGallery(images, activeImgIdx);
                 renderHostTeamSelectorAndRoster(data);
+                renderBGMLibraryList(data.bgmLibrary || [], data.sharedAudioConfigs?.bgm);
             } else {
                 hostPanelWrapper.classList.add('hidden');
                 hostPanelEl.classList.add('hidden');
@@ -1981,12 +2130,6 @@
             renderClearedFlips(data);
             renderSideLists(data, activeOrder, activeUid);
         }
-
-        // 司会者パネルのトグルボタン押下時に手動切り替えフラグを正確に更新
-        document.getElementById('btn-toggle-host-panel').addEventListener('click', () => {
-            const hostPanelEl = document.getElementById('host-panel');
-            isHostPanelManuallyToggled = !hostPanelEl.classList.contains('hidden');
-        });
 
         function getEffectiveRelayOrder(data) {
             const participants = data.participants || {};
@@ -2825,7 +2968,7 @@
         }
 
         // ==========================================
-        // 10. 手書きキャンバス（黒ペン固定にスッキリ化）
+        // 10. 手書きキャンバス
         // ==========================================
         const liveCanvas = document.getElementById('relay-live-canvas');
         const liveCtx = liveCanvas.getContext('2d');
@@ -2837,7 +2980,7 @@
 
         let drawingNow = false;
         let activeSourceCanvas = null;
-        const activeColor = '#0f172a'; // 常に黒色（要望1）
+        const activeColor = '#0f172a'; // 黒ペン固定
         const activeSize = 6;
         let strokeBuffer = [];
         let strokeSyncTimer = null;
