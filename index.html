@@ -115,7 +115,7 @@
         .red-alert-screen {
             animation: redAlertPulse 0.75s infinite;
         }
-        /* スマホ横画面（ランドスケープ）時のキャンバス・レイアウト完全最適化（解答完了・全削除ボタンを横に配置し、パネルを16:9のまま最大化） */
+        /* スマホ横画面（ランドスケープ）時のキャンバス・レイアウト完全最適化 */
         @media (orientation: landscape) and (max-height: 600px) {
             body {
                 padding: 0.15rem 0.25rem;
@@ -130,7 +130,7 @@
                 border-radius: 0.5rem !important;
             }
             #fs-question-bar {
-                display: none !important; /* 横画面の高さを最大限活かすためティッカーを非表示 */
+                display: none !important;
             }
             #fs-canvas-wrapper {
                 margin: 0 !important;
@@ -153,7 +153,7 @@
                 top: 60px !important;
                 bottom: 12px !important;
                 width: auto !important;
-                max-width: 180px !important;
+                max-width: 160px !important;
                 flex-direction: column !important;
                 justify-content: center !important;
                 background: rgba(255, 255, 255, 0.96) !important;
@@ -163,23 +163,10 @@
                 z-index: 80 !important;
                 border-radius: 1rem !important;
             }
-            #fs-drawer-toolbar .flex.items-center.gap-1\.5 {
-                flex-direction: column !important;
-                gap: 0.35rem !important;
-                width: 100% !important;
-            }
-            #fs-drawer-toolbar .h-6.w-px {
-                width: 100% !important;
-                height: 1px !important;
-                margin: 0.25rem 0 !important;
-            }
             #fs-drawer-toolbar .flex.items-center.gap-2 {
                 flex-direction: column !important;
                 gap: 0.5rem !important;
                 width: 100% !important;
-                margin-top: 0.5rem !important;
-                border-top: 2px dashed #cbd5e1;
-                padding-top: 0.5rem;
             }
             #fs-drawer-toolbar button[id^="btn-fs-"] {
                 width: 100% !important;
@@ -294,7 +281,7 @@
             <span id="fs-question-ticker" class="text-xs sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
         </div>
 
-        <!-- 全画面メイン手書きキャンバス（縦横比16:9を厳守し、横画面時はボタンを左右端・パネルを最大化） -->
+        <!-- 全画面メイン手書きキャンバス -->
         <div id="fs-canvas-wrapper" class="relative flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden my-1">
             <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full h-full rounded-2xl overflow-hidden border-4 border-cyan-500 bg-white shadow-xl flex items-center justify-center">
                 <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
@@ -322,26 +309,19 @@
             </div>
         </div>
 
-        <!-- 全画面ボトムツールバー（ペンカラー選択のみ、解答完了＆全消しボタン） -->
+        <!-- 全画面ボトムツールバー（黒ペン固定＆全消し・解答完了ボタンのみでスッキリ化） -->
         <div class="mt-0.5 shrink-0">
-            <div id="fs-drawer-toolbar" class="hidden max-w-4xl mx-auto rainbow-border-panel rounded-2xl p-2 flex flex-nowrap items-center justify-between gap-2 overflow-x-auto">
-                <div class="flex items-center gap-1.5 sm:gap-2">
-                    <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-900 ring-2 ring-offset-2 ring-red-500 scale-110 transition" data-color="#0f172a" title="黒"></button>
-                    <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-red-500 transition" data-color="#ef4444" title="赤"></button>
-                    <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-orange-500 transition" data-color="#f97316" title="橙"></button>
-                    <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-green-500 transition" data-color="#22c55e" title="緑"></button>
-                    <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-500 transition" data-color="#3b82f6" title="青"></button>
-                    <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-500 transition" data-color="#a855f7" title="紫"></button>
-                    <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white border-2 border-slate-400 text-slate-600 flex items-center justify-center text-xs transition" data-color="#ffffff" title="消しゴム">
-                        <i class="fa-solid fa-eraser"></i>
-                    </button>
-                </div>
-
+            <div id="fs-drawer-toolbar" class="hidden max-w-4xl mx-auto rainbow-border-panel rounded-2xl p-2.5 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
-                    <button id="btn-fs-clear" class="px-3.5 py-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                    <span class="inline-flex items-center gap-1.5 bg-slate-900 text-white font-black text-xs px-3 py-2 rounded-xl shadow">
+                        <span class="w-3 h-3 rounded-full bg-white inline-block"></span> 黒ペン（標準）
+                    </span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btn-fs-clear" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
                         <i class="fa-solid fa-trash-can mr-1"></i>全消し
                     </button>
-                    <button id="btn-fs-submit" class="px-4 sm:px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                    <button id="btn-fs-submit" class="px-5 sm:px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
                         <i class="fa-solid fa-bell mr-1"></i>解答完了！
                     </button>
                 </div>
@@ -668,11 +648,11 @@
                         </div>
                     </div>
 
-                    <!-- タブ4：6種類のBGM・効果音設定（BGMループなし・長時間の差分無音対応版） -->
+                    <!-- タブ4：6種類のBGM・効果音設定（アップロード進捗％表示対応版） -->
                     <div id="tab-sounds" class="host-tab-content hidden space-y-2 text-xs mb-3">
                         <div class="bg-blue-50 border-2 border-blue-300 rounded-xl p-2.5 text-blue-800 font-bold leading-relaxed mb-2">
-                            <i class="fa-solid fa-circle-info mr-1"></i> <strong>大容量BGM・すぐに共有可能！</strong><br>
-                            BGMループ機能を削除し、解答時間（制限時間）に対してBGM素材のほうが短い場合は、音声終了後に自動で無音（静寂）になる仕様になりました。
+                            <i class="fa-solid fa-circle-info mr-1"></i> <strong>BGMアップロード進捗表示対応！</strong><br>
+                            ファイル選択時にアップロードの進捗率（％）がリアルタイムで表示され、完了後に全員のルームへ同期されます。
                         </div>
                         <div id="sound-slots-container" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
                     </div>
@@ -694,7 +674,7 @@
                     </div>
                 </div>
 
-                <!-- 【2】現在の解答者ターンバナー＆リアルタイム手書きステージ（スマホ横画面最適化） -->
+                <!-- 【2】現在の解答者ターンバナー＆リアルタイム手書きステージ -->
                 <div id="live-stage-panel" class="white-arcade-card rounded-2xl p-4 border-2 border-cyan-400">
                     <div id="active-turn-banner" class="bg-cyan-50 border-2 border-cyan-400 rounded-xl p-3 mb-3 flex flex-wrap items-center justify-between gap-2">
                         <div class="flex items-center gap-2.5 min-w-0">
@@ -729,25 +709,19 @@
                         </div>
                     </div>
 
-                    <!-- 解答者用ペンツール（色のみ）＆全消し・解答完了ボタン -->
+                    <!-- 解答者用ツール（黒ペン固定＆全消し・解答完了ボタン） -->
                     <div id="answerer-controls" class="hidden max-w-2xl mx-auto mt-3 flex flex-wrap items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border-2 border-blue-300">
-                        <div class="flex items-center gap-1.5 sm:gap-2">
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-slate-900 ring-2 ring-offset-2 ring-red-500 scale-110 transition" data-color="#0f172a" title="黒"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-red-500 transition" data-color="#ef4444" title="赤"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-orange-500 transition" data-color="#f97316" title="橙"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-green-500 transition" data-color="#22c55e" title="緑"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-blue-500 transition" data-color="#3b82f6" title="青"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-purple-500 transition" data-color="#a855f7" title="紫"></button>
-                            <button class="r-color-btn w-8 h-8 rounded-full bg-white border-2 border-slate-400 text-slate-600 flex items-center justify-center text-xs transition" data-color="#ffffff" title="消しゴム">
-                                <i class="fa-solid fa-eraser"></i>
-                            </button>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 bg-slate-900 text-white font-black text-xs px-3 py-2 rounded-xl shadow">
+                                <span class="w-3 h-3 rounded-full bg-white inline-block"></span> 黒ペン（標準）
+                            </span>
                         </div>
 
                         <div class="flex items-center gap-2">
-                            <button id="btn-canvas-clear" class="px-3 py-2 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-300 font-black rounded-xl text-xs transition">
+                            <button id="btn-canvas-clear" class="px-3.5 py-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs game-btn">
                                 <i class="fa-solid fa-trash-can mr-1"></i>全消去
                             </button>
-                            <button id="btn-submit-answer" class="px-4 sm:px-5 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                            <button id="btn-submit-answer" class="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
                                 <i class="fa-solid fa-bell mr-1"></i> 解答完了！
                             </button>
                         </div>
@@ -893,7 +867,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const USER_FIREBASE_CONFIG = {
             apiKey: "AIzaSyAfLRWK-djjENH8tq4u9onsqcffv_ZlTzs",
@@ -999,11 +973,11 @@
         ];
 
         function getColorDef(key) {
-            return RAINBOW_COLORS.find(c => c.key === key) || RAINBOU_COLORS[0];
+            return RAINBOW_COLORS.find(c => c.key === key) || RAINBOW_COLORS[0];
         }
 
         // ==========================================
-        // 4. 6種類のBGM・効果音マネージャー (BGMループなし＆長時間の差分無音対応版)
+        // 4. 6種類のBGM・効果音マネージャー (アップロード進捗％表示対応)
         // ==========================================
         let isMuted = false;
         let masterVolume = 0.45;
@@ -1033,7 +1007,7 @@
                 videoEl.playsInline = true;
                 videoEl.preload = 'auto';
                 videoEl.crossOrigin = 'anonymous';
-                videoEl.loop = false; // ループ機能を削除（要望3）
+                videoEl.loop = false;
                 document.body.appendChild(videoEl);
 
                 customMediaPlayers[def.key] = {
@@ -1048,13 +1022,23 @@
                 row.innerHTML = `
                     <div class="flex items-center gap-2 min-w-0 flex-1">
                         <i class="${def.icon} w-4 text-center"></i>
-                        <div class="truncate">
+                        <div class="truncate w-full">
                             <div class="font-black text-slate-800 text-xs">${def.label}</div>
                             <div id="sound-name-${def.key}" class="text-[10px] text-green-600 font-bold truncate">内蔵ゲームサウンド</div>
+                            <!-- 要望2: アップロード進捗表示バー -->
+                            <div id="upload-progress-box-${def.key}" class="hidden w-full mt-1">
+                                <div class="flex justify-between text-[9px] font-black text-blue-600 mb-0.5">
+                                    <span id="upload-status-text-${def.key}">アップロード中...</span>
+                                    <span id="upload-pct-text-${def.key}">0%</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                    <div id="upload-bar-${def.key}" class="h-full bg-blue-500 transition-all duration-150" style="width: 0%"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <label class="cursor-pointer px-2.5 py-1 bg-white hover:bg-blue-50 border border-blue-300 rounded-lg text-[11px] font-black text-blue-600 transition">
+                        <label id="sound-label-${def.key}" class="cursor-pointer px-2.5 py-1 bg-white hover:bg-blue-50 border border-blue-300 rounded-lg text-[11px] font-black text-blue-600 transition">
                             <i class="fa-solid fa-folder-open mr-1"></i>ファイル選択
                             <input type="file" data-sound-key="${def.key}" accept=".mp3,.mp4,audio/*,video/mp4" class="sound-file-input hidden">
                         </label>
@@ -1075,38 +1059,44 @@
                     const key = inp.dataset.soundKey;
                     if (!file || !customMediaPlayers[key] || !currentRoomId) return;
 
-                    showToast("音声ファイルをクラウドにアップロード中...", "info");
+                    const progressBox = document.getElementById(`upload-progress-box-${key}`);
+                    const progressBar = document.getElementById(`upload-bar-${key}`);
+                    const progressPct = document.getElementById(`upload-pct-text-${key}`);
+                    const statusText = document.getElementById(`upload-status-text-${key}`);
+                    progressBox.classList.remove('hidden');
+                    progressBar.style.width = '0%';
+                    progressPct.textContent = '0%';
+                    statusText.textContent = 'アップロード準備中...';
 
                     try {
                         let mediaUrl = '';
-                        if (key === 'bgm' || file.size > 600000) {
-                            try {
-                                const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                                const sRef = storageRef(storage, `stadium_rooms/${currentRoomId}/${key}_${Date.now()}_${safeFileName}`);
-                                const metadata = { contentType: file.type || (file.name.endsWith('.mp4') ? 'video/mp4' : 'audio/mpeg') };
-                                const snapshot = await uploadBytes(sRef, file, metadata);
-                                mediaUrl = await getDownloadURL(snapshot.ref);
-                            } catch (storageErr) {
-                                console.warn("Storage upload failed, checking fallback:", storageErr);
-                                if (file.size <= 750000) {
-                                    mediaUrl = await new Promise((resolve, reject) => {
-                                        const reader = new FileReader();
-                                        reader.onload = (ev) => resolve(ev.target.result);
-                                        reader.onerror = reject;
-                                        reader.readAsDataURL(file);
-                                    });
-                                } else {
-                                    throw storageErr;
+                        const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                        const sRef = storageRef(storage, `stadium_rooms/${currentRoomId}/${key}_${Date.now()}_${safeFileName}`);
+                        const metadata = { contentType: file.type || (file.name.endsWith('.mp4') ? 'video/mp4' : 'audio/mpeg') };
+                        
+                        const uploadTask = uploadBytesResumable(sRef, file, metadata);
+
+                        mediaUrl = await new Promise((resolve, reject) => {
+                            uploadTask.on('state_changed', 
+                                (snapshot) => {
+                                    const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                                    progressBar.style.width = `${progress}%`;
+                                    progressPct.textContent = `${progress}%`;
+                                    statusText.textContent = progress === 100 ? 'クラウド同期中...' : 'アップロード中...';
+                                }, 
+                                (error) => {
+                                    reject(error);
+                                }, 
+                                async () => {
+                                    try {
+                                        const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                                        resolve(downloadUrl);
+                                    } catch (err) {
+                                        reject(err);
+                                    }
                                 }
-                            }
-                        } else {
-                            mediaUrl = await new Promise((resolve, reject) => {
-                                const reader = new FileReader();
-                                reader.onload = (ev) => resolve(ev.target.result);
-                                reader.onerror = reject;
-                                reader.readAsDataURL(file);
-                            });
-                        }
+                            );
+                        });
 
                         customMediaPlayers[key].videoEl.src = mediaUrl;
                         customMediaPlayers[key].videoEl.load();
@@ -1126,8 +1116,11 @@
                         showToast(`「${file.name}」を全員のルームに同期適用しました！`, "success");
                     } catch (err) {
                         console.error(err);
-                        showToast("⚠️ 音声の共有に失敗しました（ファイルサイズまたはStorage権限を確認してください）", "error");
+                        showToast("⚠️ 音声の共有に失敗しました（Storage権限を確認してください）", "error");
                     } finally {
+                        setTimeout(() => {
+                            progressBox.classList.add('hidden');
+                        }, 1200);
                         e.target.value = '';
                     }
                 });
@@ -1348,7 +1341,7 @@
 
             const bgmSlot = customMediaPlayers.bgm;
             if (bgmSlot && bgmSlot.hasCustom && bgmSlot.currentUrl) {
-                bgmSlot.videoEl.loop = false; // ループなし
+                bgmSlot.videoEl.loop = false;
                 bgmSlot.videoEl.volume = masterVolume;
                 bgmSlot.videoEl.playbackRate = 1.0;
                 bgmSlot.videoEl.currentTime = 0;
@@ -1369,11 +1362,10 @@
                 return;
             }
 
-            // 内蔵シンセBGM（ループなし：一定回数で自然終了して無音になる）
             ensureAudioCtx();
             const bassNotes = [261.63, 261.63, 329.63, 261.63, 349.23, 349.23, 329.63, 196.00];
             let loopCount = 0;
-            const maxLoops = 24; // 約48小節で自然停止し、残りの時間は無音になる（要望4）
+            const maxLoops = 24;
 
             synthBgmTimer = setInterval(() => {
                 if (isMuted || !audioCtx) return;
@@ -1690,7 +1682,7 @@
         }
 
         // ==========================================
-        // 7. ルーム同期・状態管理
+        // 7. ルーム同期・状態管理 (要望3のバグ修正版)
         // ==========================================
         let roomState = null;
         let countdownInterval = null;
@@ -1701,6 +1693,13 @@
         let lastActiveImageIndex = -1;
         let seenStrokeIds = new Set();
         let appliedAudioSig = "";
+
+        // 司会者パネルのユーザーによる手動開閉状態を保持（判定時の強制オープンを防止するため）
+        let isHostPanelManuallyToggled = false;
+
+        document.getElementById('btn-toggle-host-panel').addEventListener('click', () => {
+            isHostPanelManuallyToggled = !document.getElementById('host-panel').classList.contains('hidden');
+        });
 
         function enterRoom(roomId) {
             currentRoomId = roomId;
@@ -1718,6 +1717,7 @@
             lastWrongEvent = 0;
             lastActiveImageIndex = -1;
             appliedAudioSig = "";
+            isHostPanelManuallyToggled = false;
 
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', roomId);
             roomUnsubscribe = onSnapshot(roomRef, (snap) => {
@@ -1913,14 +1913,20 @@
             }
 
             const hostPanelWrapper = document.getElementById('host-panel').previousElementSibling;
+            const hostPanelEl = document.getElementById('host-panel');
             if (myRole === 'host') {
                 hostPanelWrapper.classList.remove('hidden');
-                document.getElementById('host-panel').classList.remove('hidden');
+                // 要望3修正：ユーザーが手動で非表示にしていた場合は、ルーム同期で勝手に再表示されないようにする
+                if (!isHostPanelManuallyToggled) {
+                    hostPanelEl.classList.remove('hidden');
+                    document.getElementById('host-panel-toggle-icon').className = 'fa-solid fa-eye-slash mr-1';
+                    document.getElementById('host-panel-toggle-text').textContent = '非表示にする';
+                }
                 renderHostImageGallery(images, activeImgIdx);
                 renderHostTeamSelectorAndRoster(data);
             } else {
                 hostPanelWrapper.classList.add('hidden');
-                document.getElementById('host-panel').classList.add('hidden');
+                hostPanelEl.classList.add('hidden');
             }
 
             document.getElementById('host-judge-controls').classList.toggle('hidden', !(myRole === 'host' && data.status === 'playing'));
@@ -1975,6 +1981,12 @@
             renderClearedFlips(data);
             renderSideLists(data, activeOrder, activeUid);
         }
+
+        // 司会者パネルのトグルボタン押下時に手動切り替えフラグを正確に更新
+        document.getElementById('btn-toggle-host-panel').addEventListener('click', () => {
+            const hostPanelEl = document.getElementById('host-panel');
+            isHostPanelManuallyToggled = !hostPanelEl.classList.contains('hidden');
+        });
 
         function getEffectiveRelayOrder(data) {
             const participants = data.participants || {};
@@ -2813,7 +2825,7 @@
         }
 
         // ==========================================
-        // 10. 手書きキャンバス（ペン太さ・1つ戻る機能を削除）
+        // 10. 手書きキャンバス（黒ペン固定にスッキリ化）
         // ==========================================
         const liveCanvas = document.getElementById('relay-live-canvas');
         const liveCtx = liveCanvas.getContext('2d');
@@ -2825,8 +2837,8 @@
 
         let drawingNow = false;
         let activeSourceCanvas = null;
-        let activeColor = '#0f172a';
-        let activeSize = 6; // 固定の太さに設定（要件1）
+        const activeColor = '#0f172a'; // 常に黒色（要望1）
+        const activeSize = 6;
         let strokeBuffer = [];
         let strokeSyncTimer = null;
 
@@ -2973,21 +2985,6 @@
         window.addEventListener('touchmove', moveStrokeOnCanvas, { passive: false });
         window.addEventListener('mouseup', endStrokeOnCanvas);
         window.addEventListener('touchend', endStrokeOnCanvas);
-
-        function setSyncedPenColor(color) {
-            activeColor = color;
-            document.querySelectorAll('.r-color-btn, .fs-color-btn').forEach(b => {
-                if (b.dataset.color === color) {
-                    b.classList.add('ring-2', 'ring-offset-2', 'ring-red-500', 'scale-110');
-                } else {
-                    b.classList.remove('ring-2', 'ring-offset-2', 'ring-red-500', 'scale-110');
-                }
-            });
-        }
-
-        document.querySelectorAll('.r-color-btn, .fs-color-btn').forEach(btn => {
-            btn.addEventListener('click', () => setSyncedPenColor(btn.dataset.color));
-        });
 
         async function executeClearBoard() {
             if (!isMyActiveTurn() || !currentRoomId || !roomState) return;
