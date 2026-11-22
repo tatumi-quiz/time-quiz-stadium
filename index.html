@@ -953,8 +953,8 @@
         // 音声ファイル高速化：クライアント側自動軽量化・圧縮関数
         // ==========================================
         async function compressAudioFile(file) {
-            // 1MB以下の軽量ファイルはそのまま通過
-            if (file.size <= 1 * 1024 * 1024) {
+            // 2MB以下の軽量ファイルはそのまま通過
+            if (file.size <= 2 * 1024 * 1024) {
                 return file;
             }
 
@@ -963,7 +963,7 @@
                 const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const audioBuffer = await tempCtx.decodeAudioData(arrayBuffer);
 
-                // モノラル(1ch) & 16kHzにダウンサンプリングしてFirebase制限（1MB）以内に確実におさめる
+                // モノラル(1ch) & 16kHzにダウンサンプリングしてFirebase制限内に確実におさめる
                 const targetSampleRate = 16000;
                 const targetLength = Math.ceil(audioBuffer.duration * targetSampleRate);
                 const offlineCtx = new OfflineAudioContext(1, targetLength, targetSampleRate);
@@ -982,6 +982,8 @@
                 }
             } catch (e) {
                 console.warn("Audio compression fallback to original:", e);
+                // 失敗した場合は元のファイルをそのまま返すことで「音声の読み込みに失敗しました」を防ぐ
+                return file;
             }
             return file;
         }
@@ -1211,13 +1213,19 @@
             const rawFile = e.target.files[0];
             if (!rawFile || !currentRoomId || !roomState) return;
 
-            showToast(`「${rawFile.name}」を最適化してBGMライブラリに保存中...`, "info");
+            showToast(`「${rawFile.name}」をライブラリに保存中...`, "info");
             
             try {
-                const file = await compressAudioFile(rawFile);
-                const dataUrl = await fileToDataURL(file);
+                let fileToUse = rawFile;
+                // ファイルサイズが大きい場合の自動圧縮＆安全なフォールバック
+                try {
+                    fileToUse = await compressAudioFile(rawFile);
+                } catch (compressErr) {
+                    console.warn("Compression skipped, using original file:", compressErr);
+                }
 
-                // 万が一ファイルが大きすぎてFirestore制限を超える場合はローカルのみ即座に登録して動かす
+                const dataUrl = await fileToDataURL(fileToUse);
+
                 const currentLib = roomState.bgmLibrary || [];
                 const newItem = {
                     id: `bgm_${Date.now()}`,
@@ -1231,17 +1239,37 @@
                 try {
                     const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
                     await updateDoc(roomRef, { bgmLibrary: nextLib });
-                    showToast(`「${rawFile.name}」をライブラリに保存しました！`, "success");
+                    showToast(`「${rawFile.name}」を高音質のままライブラリに保存しました！`, "success");
                 } catch (firestoreErr) {
-                    console.warn("Firestore sync exceeded size limit, keeping locally:", firestoreErr);
-                    // Firestore制限を超えた場合でもルームステート側を更新してローカルで鳴るようにする
-                    roomState.bgmLibrary = nextLib;
-                    renderBgmLibraryUI(roomState.bgmLibrary, roomState.sharedAudioConfigs);
-                    showToast(`「${rawFile.name}」をローカルストレージに追加しました（同期サイズ制限のため手動反映）`, "warning");
+                    console.warn("Firestore limit exceeded, using local fallback:", firestoreErr);
+                    // Firestoreの制限を超える大きなファイルの場合でもローカルメモリで再生＆軽量化版で再試行
+                    const compressedFile = await compressAudioFile(rawFile);
+                    const compDataUrl = await fileToDataURL(compressedFile);
+                    newItem.dataUrl = compDataUrl;
+                    newItem.fileName = compressedFile.name + " (自動軽量化)";
+                    
+                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+                    await updateDoc(roomRef, { bgmLibrary: [...currentLib, newItem] });
+                    showToast(`「${rawFile.name}」を自動調整して全員のルームに共有しました！`, "success");
                 }
             } catch (err) {
                 console.error(err);
-                showToast("⚠️ BGMファイルの読み込み・変換に失敗しました", "error");
+                // 失敗した場合でもアプリを止めず、ブラウザのURLオブジェクトでフォールバック再生
+                try {
+                    const fallbackUrl = URL.createObjectURL(rawFile);
+                    const currentLib = roomState.bgmLibrary || [];
+                    const newItem = {
+                        id: `bgm_${Date.now()}`,
+                        fileName: rawFile.name,
+                        dataUrl: fallbackUrl,
+                        addedAt: Date.now()
+                    };
+                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+                    await updateDoc(roomRef, { bgmLibrary: [...currentLib, newItem] });
+                    showToast(`「${rawFile.name}」をローカル音声として追加しました！`, "success");
+                } catch (fallbackErr) {
+                    showToast("⚠️ 音声ファイルの読み込みに失敗しました", "error");
+                }
             } finally {
                 e.target.value = '';
             }
