@@ -116,18 +116,55 @@
             animation: redAlertPulse 0.75s infinite;
         }
         /* スマホ横画面（ランドスケープ）時のキャンバス・レイアウト完全最適化 */
-        @media (orientation: landscape) and (max-height: 750px) {
+        @media (orientation: landscape) and (max-height: 600px) {
             body {
                 padding: 0.25rem 0.5rem;
             }
             #fullscreen-board-modal {
-                padding: 0.25rem 0.5rem;
+                padding: 0.25rem 0.75rem;
+                gap: 0.25rem;
+            }
+            #fs-top-hud {
+                padding: 0.25rem 0.625rem !important;
+                border-width: 2px !important;
+                border-radius: 0.75rem !important;
+            }
+            #fs-question-bar {
+                padding: 0.15rem 0.5rem !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+                border-width: 1px !important;
             }
             .canvas-container-box {
-                max-height: 52vh !important;
+                max-height: 50dvh !important;
+            }
+            #fs-canvas-wrapper {
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+                min-height: 0 !important;
             }
             #fs-canvas-container {
-                max-height: 52vh !important;
+                height: 100% !important;
+                max-height: 100% !important;
+                width: auto !important;
+                max-width: 100% !important;
+                aspect-ratio: 16 / 9 !important;
+                border-width: 2px !important;
+            }
+            #fs-drawer-toolbar {
+                padding: 0.25rem 0.625rem !important;
+                border-width: 2px !important;
+                border-radius: 0.75rem !important;
+            }
+            #fs-drawer-toolbar .fs-color-btn {
+                width: 1.5rem !important;
+                height: 1.5rem !important;
+            }
+            #fs-drawer-toolbar .fs-size-btn,
+            #fs-drawer-toolbar button[id^="btn-fs-"] {
+                padding-top: 0.25rem !important;
+                padding-bottom: 0.25rem !important;
+                font-size: 0.75rem !important;
             }
         }
         @keyframes confettiFall {
@@ -186,59 +223,59 @@
     </div>
 
     <!-- ==================== 手書きパネル全画面表示オーバーレイ ==================== -->
-    <div id="fullscreen-board-modal" class="fixed inset-0 bg-white z-[70] hidden flex-col justify-between p-2 sm:p-4 select-none transition-shadow">
+    <div id="fullscreen-board-modal" class="fixed inset-0 h-[100dvh] bg-white z-[70] hidden flex-col justify-between p-2 sm:p-4 select-none transition-shadow overflow-hidden">
         <!-- 全画面トップHUD -->
-        <div class="rainbow-border-panel rounded-2xl p-2.5 sm:px-4 flex flex-wrap items-center justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-                <span id="fs-role-tag" class="bg-cyan-500 text-white text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-lg whitespace-nowrap">
+        <div id="fs-top-hud" class="rainbow-border-panel rounded-2xl p-2 sm:px-4 flex flex-nowrap items-center justify-between gap-1.5 sm:gap-2 shrink-0 overflow-x-auto">
+            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
+                <span id="fs-role-tag" class="bg-cyan-500 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg whitespace-nowrap">
                     解答中
                 </span>
-                <span id="fs-drawer-name" class="font-black text-slate-800 text-sm sm:text-xl truncate">
+                <span id="fs-drawer-name" class="font-black text-slate-800 text-xs sm:text-lg truncate">
                     プレイヤー名
                 </span>
             </div>
 
-            <div class="flex items-center gap-2 sm:gap-4">
-                <div class="bg-slate-50 border-2 border-green-400 px-3 py-1 rounded-xl flex items-center gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                <div class="bg-slate-50 border-2 border-green-400 px-2 py-0.5 sm:px-3 sm:py-1 rounded-xl flex items-center gap-2">
                     <div class="text-left">
-                        <div id="fs-quota-text" class="text-[11px] sm:text-xs font-black text-green-600 leading-tight">
+                        <div id="fs-quota-text" class="text-[10px] sm:text-xs font-black text-green-600 leading-tight whitespace-nowrap">
                             クリアまであと 5 問！ (0/5)
                         </div>
-                        <div class="w-24 sm:w-32 h-2 bg-slate-200 rounded-full overflow-hidden mt-1">
+                        <div class="w-20 sm:w-32 h-1.5 sm:h-2 bg-slate-200 rounded-full overflow-hidden mt-0.5 sm:mt-1">
                             <div id="fs-quota-bar" class="h-full rainbow-gradient-bar transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
-                <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-3 py-1 rounded-xl flex items-center gap-1.5 shadow-sm transition-colors duration-200">
-                    <i id="fs-timer-icon" class="fa-solid fa-stopwatch text-blue-500 text-sm"></i>
-                    <span id="fs-timer-val" class="font-led font-black text-xl sm:text-2xl text-blue-500 tabular-nums">--</span>
-                    <span class="text-[10px] font-black text-slate-500">SEC</span>
+                <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-xl flex items-center gap-1 shadow-sm transition-colors duration-200">
+                    <i id="fs-timer-icon" class="fa-solid fa-stopwatch text-blue-500 text-xs sm:text-sm"></i>
+                    <span id="fs-timer-val" class="font-led font-black text-lg sm:text-2xl text-blue-500 tabular-nums">--</span>
+                    <span class="text-[9px] sm:text-[10px] font-black text-slate-500">SEC</span>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
-                <button id="btn-fs-view-image" class="relative px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 shrink-0">
+                <button id="btn-fs-view-image" class="relative px-2.5 py-1.5 sm:px-3 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-xl text-[11px] sm:text-sm game-btn flex items-center gap-1 whitespace-nowrap">
                     <i class="fa-regular fa-image"></i>
                     <span>問題画像</span>
                     <span id="fs-image-new-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full animate-bounce">NEW</span>
                 </button>
-                <button id="btn-exit-fullscreen" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-blue-400 font-black rounded-xl text-xs sm:text-sm game-btn flex items-center gap-1">
+                <button id="btn-exit-fullscreen" class="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-blue-400 font-black rounded-xl text-[11px] sm:text-sm game-btn flex items-center gap-1 whitespace-nowrap">
                     <i class="fa-solid fa-compress text-blue-500"></i>
-                    <span class="hidden sm:inline">通常表示へ</span>
+                    <span>通常表示</span>
                 </button>
             </div>
         </div>
 
         <!-- 全画面問題文ティッカー -->
-        <div class="bg-blue-50 border-2 border-blue-300 rounded-xl px-3 py-1.5 my-1 text-center truncate">
+        <div id="fs-question-bar" class="bg-blue-50 border-2 border-blue-300 rounded-xl px-3 py-1 my-1 text-center truncate shrink-0">
             <span class="text-[10px] font-black bg-blue-500 text-white px-2 py-0.5 rounded mr-1.5">Q</span>
             <span id="fs-question-ticker" class="text-xs sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
         </div>
 
-        <!-- 全画面メイン手書きキャンバス（横画面でも縦横比16:9を厳守し、画面内に完璧に収まるよう自動縮小） -->
-        <div class="relative flex-1 w-full flex items-center justify-center overflow-hidden my-1">
-            <div id="fs-canvas-container" class="relative w-full max-w-5xl aspect-[16/9] max-h-[62vh] rounded-2xl overflow-hidden border-4 border-cyan-500 bg-white shadow-xl flex items-center justify-center">
+        <!-- 全画面メイン手書きキャンバス（縦横比16:9を厳守し、残りの高さにぴったりフィット） -->
+        <div id="fs-canvas-wrapper" class="relative flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden my-1">
+            <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full h-full rounded-2xl overflow-hidden border-4 border-cyan-500 bg-white shadow-xl flex items-center justify-center">
                 <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
 
                 <div id="fs-spectating-badge" class="hidden absolute top-3 left-3 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1.5 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
@@ -265,8 +302,8 @@
         </div>
 
         <!-- 全画面ボトムツールバー -->
-        <div class="mt-1">
-            <div id="fs-drawer-toolbar" class="hidden max-w-4xl mx-auto rainbow-border-panel rounded-2xl p-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div class="mt-0.5 shrink-0">
+            <div id="fs-drawer-toolbar" class="hidden max-w-4xl mx-auto rainbow-border-panel rounded-2xl p-2 flex flex-nowrap items-center justify-between gap-2 overflow-x-auto">
                 <div class="flex items-center gap-1.5 sm:gap-2">
                     <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-900 ring-2 ring-offset-2 ring-red-500 scale-110 transition" data-color="#0f172a" title="黒"></button>
                     <button class="fs-color-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-red-500 transition" data-color="#ef4444" title="赤"></button>
@@ -985,12 +1022,15 @@
                 const videoEl = document.createElement('video');
                 videoEl.className = 'hidden';
                 videoEl.playsInline = true;
+                videoEl.preload = 'auto';
+                videoEl.crossOrigin = 'anonymous';
                 if (def.loop) videoEl.loop = true;
                 document.body.appendChild(videoEl);
 
                 customMediaPlayers[def.key] = {
                     videoEl,
                     hasCustom: false,
+                    currentUrl: '',
                     fileName: '内蔵ゲームサウンド'
                 };
 
@@ -1030,21 +1070,40 @@
 
                     try {
                         let mediaUrl = '';
-                        // 5000KB (5MB) 超えるファイルやBGMはFirebase Storageへアップロード
-                        if (key === 'bgm' || file.size > 5000000) {
-                            const sRef = storageRef(storage, `stadium_rooms/${currentRoomId}/${key}_${Date.now()}_${file.name}`);
-                            const snapshot = await uploadBytes(sRef, file);
-                            mediaUrl = await getDownloadURL(snapshot.ref);
+                        // Firestoreの1MBドキュメント上限を超えないよう、600KB超またはBGMはFirebase Storageへアップロード
+                        if (key === 'bgm' || file.size > 600000) {
+                            try {
+                                const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                                const sRef = storageRef(storage, `stadium_rooms/${currentRoomId}/${key}_${Date.now()}_${safeFileName}`);
+                                const metadata = { contentType: file.type || (file.name.endsWith('.mp4') ? 'video/mp4' : 'audio/mpeg') };
+                                const snapshot = await uploadBytes(sRef, file, metadata);
+                                mediaUrl = await getDownloadURL(snapshot.ref);
+                            } catch (storageErr) {
+                                console.warn("Storage upload failed, checking fallback:", storageErr);
+                                if (file.size <= 750000) {
+                                    mediaUrl = await new Promise((resolve, reject) => {
+                                        const reader = new FileReader();
+                                        reader.onload = (ev) => resolve(ev.target.result);
+                                        reader.onerror = reject;
+                                        reader.readAsDataURL(file);
+                                    });
+                                } else {
+                                    throw storageErr;
+                                }
+                            }
                         } else {
-                            mediaUrl = await new Promise((resolve) => {
+                            mediaUrl = await new Promise((resolve, reject) => {
                                 const reader = new FileReader();
                                 reader.onload = (ev) => resolve(ev.target.result);
+                                reader.onerror = reject;
                                 reader.readAsDataURL(file);
                             });
                         }
 
                         customMediaPlayers[key].videoEl.src = mediaUrl;
+                        customMediaPlayers[key].videoEl.load();
                         customMediaPlayers[key].hasCustom = true;
+                        customMediaPlayers[key].currentUrl = mediaUrl;
                         customMediaPlayers[key].fileName = file.name;
                         document.getElementById(`sound-name-${key}`).textContent = `🎵 ${file.name} (全員共有)`;
 
@@ -1052,13 +1111,16 @@
                         await updateDoc(roomRef, {
                             [`sharedAudioConfigs.${key}`]: {
                                 fileName: file.name,
-                                dataUrl: mediaUrl
+                                dataUrl: mediaUrl,
+                                updatedAt: Date.now()
                             }
                         });
                         showToast(`「${file.name}」を全員のルームに同期適用しました！`, "success");
                     } catch (err) {
                         console.error(err);
-                        showToast("⚠️ 音声のアップロードに失敗しました", "error");
+                        showToast("⚠️ 音声の共有に失敗しました（ファイルサイズまたはStorage権限を確認してください）", "error");
+                    } finally {
+                        e.target.value = '';
                     }
                 });
             });
@@ -1086,8 +1148,10 @@
                     const slot = customMediaPlayers[key];
                     if (!slot) return;
                     slot.videoEl.pause();
-                    slot.videoEl.src = '';
+                    slot.videoEl.removeAttribute('src');
+                    slot.videoEl.load();
                     slot.hasCustom = false;
+                    slot.currentUrl = '';
                     slot.fileName = '内蔵ゲームサウンド';
                     document.getElementById(`sound-name-${key}`).textContent = '内蔵ゲームサウンド';
 
@@ -1112,9 +1176,12 @@
                 if (!slot) return;
 
                 if (item && item.dataUrl) {
-                    if (!slot.hasCustom || slot.videoEl.src !== item.dataUrl) {
+                    if (!slot.hasCustom || slot.currentUrl !== item.dataUrl) {
+                        slot.videoEl.pause();
                         slot.videoEl.src = item.dataUrl;
+                        slot.videoEl.load();
                         slot.hasCustom = true;
+                        slot.currentUrl = item.dataUrl;
                         slot.fileName = item.fileName || '共有音声ファイル';
                         const nameEl = document.getElementById(`sound-name-${key}`);
                         if (nameEl) nameEl.textContent = `🎵 ${slot.fileName} (全員共有)`;
@@ -1126,8 +1193,10 @@
                     }
                 } else if (!item && slot.hasCustom) {
                     slot.videoEl.pause();
-                    slot.videoEl.src = '';
+                    slot.videoEl.removeAttribute('src');
+                    slot.videoEl.load();
                     slot.hasCustom = false;
+                    slot.currentUrl = '';
                     slot.fileName = '内蔵ゲームサウンド';
                     const nameEl = document.getElementById(`sound-name-${key}`);
                     if (nameEl) nameEl.textContent = '内蔵ゲームサウンド';
@@ -1270,11 +1339,24 @@
             isBgmRunning = true;
 
             const bgmSlot = customMediaPlayers.bgm;
-            if (bgmSlot && bgmSlot.hasCustom && bgmSlot.videoEl.src) {
+            if (bgmSlot && bgmSlot.hasCustom && bgmSlot.currentUrl) {
                 bgmSlot.videoEl.volume = masterVolume;
                 bgmSlot.videoEl.playbackRate = 1.0;
                 bgmSlot.videoEl.currentTime = 0;
-                bgmSlot.videoEl.play().catch(() => {});
+                const playPromise = bgmSlot.videoEl.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch((err) => {
+                        console.warn("BGM autoplay blocked:", err);
+                        showToast("🔊 画面をタップすると共有BGMが再生されます", "info");
+                        const resumeOnTap = () => {
+                            if (isBgmRunning && !isMuted && bgmSlot.hasCustom) {
+                                bgmSlot.videoEl.volume = masterVolume;
+                                bgmSlot.videoEl.play().catch(() => {});
+                            }
+                        };
+                        window.addEventListener('pointerdown', resumeOnTap, { once: true });
+                    });
+                }
                 return;
             }
 
@@ -1651,12 +1733,11 @@
             const myRole = me ? me.role : 'spectator';
 
             // オーディオ設定の同期チェック
-            if (data.sharedAudioConfigs) {
-                const sig = JSON.stringify(data.sharedAudioConfigs);
-                if (sig !== appliedAudioSig) {
-                    appliedAudioSig = sig;
-                    applySharedAudioConfigs(data.sharedAudioConfigs);
-                }
+            const audioConfigs = data.sharedAudioConfigs || {};
+            const sig = JSON.stringify(audioConfigs);
+            if (sig !== appliedAudioSig) {
+                appliedAudioSig = sig;
+                applySharedAudioConfigs(audioConfigs);
             }
 
             if (data.clearVersion && data.clearVersion !== lastClearVer) {
