@@ -116,7 +116,7 @@
             animation: redAlertPulse 0.75s infinite;
         }
 
-        /* パソコン（PC・横長画面）での全画面解答者パネル完全最適化 */
+        /* パソコン（PC・横長画面）での全画面解答者＆司会者パネル完全最適化 */
         @media (min-width: 768px) {
             #fs-main-container {
                 flex-direction: row !important;
@@ -129,7 +129,7 @@
                 height: 100% !important;
                 max-height: calc(100dvh - 130px) !important;
             }
-            #fs-drawer-toolbar {
+            #fs-drawer-toolbar, #fs-host-toolbar {
                 flex-direction: column !important;
                 width: auto !important;
                 min-width: 170px !important;
@@ -137,10 +137,22 @@
                 gap: 1.25rem !important;
                 box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important;
             }
-            #fs-drawer-toolbar button {
+            #fs-drawer-toolbar button, #fs-host-toolbar button {
                 width: 100% !important;
-                padding: 0.85rem 1rem !important;
-                font-size: 0.95rem !important;
+                padding: 0.75rem 0.9rem !important;
+                font-size: 0.9rem !important;
+            }
+        }
+
+        /* スマホ等で全画面時のボタンが大きすぎてパネルを圧迫しないよう調整 */
+        @media (max-width: 767px) {
+            #fs-drawer-toolbar, #fs-host-toolbar {
+                padding: 0.5rem 0.75rem !important;
+                gap: 0.75rem !important;
+            }
+            #fs-drawer-toolbar button, #fs-host-toolbar button, #answerer-controls button {
+                padding: 0.45rem 0.85rem !important;
+                font-size: 0.75rem !important;
             }
         }
 
@@ -250,7 +262,7 @@
             <span id="fs-question-ticker" class="text-xs sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
         </div>
 
-        <!-- 全画面メインエリア（キャンバス + ツールバー） PCでも右側に縦配置されるフレックス構造 -->
+        <!-- 全画面メインエリア（キャンバス + ツールバー） -->
         <div id="fs-main-container" class="relative flex-1 min-h-0 w-full flex flex-col items-center justify-center overflow-hidden my-1 gap-2">
             <!-- キャンバス本体（16:9比率を保ったまま大画面化） -->
             <div id="fs-canvas-wrapper" class="relative flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden">
@@ -261,7 +273,6 @@
                         <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
                     </div>
 
-                    <!-- 要望1: 解答完了オーバーレイを中央からパネル下部に移動（文字と被らないよう配置） -->
                     <div id="fs-submitted-overlay" class="hidden absolute inset-0 bg-white/30 backdrop-blur-[1px] flex flex-col items-center justify-end p-3 pb-5 text-center z-10 pointer-events-none">
                         <div class="bg-white/95 border-4 border-orange-400 px-6 py-2.5 rounded-2xl shadow-2xl animate-pop pointer-events-auto">
                             <div class="text-orange-500 font-black text-base sm:text-lg mb-0.5">
@@ -274,20 +285,30 @@
                     <div id="fs-timeup-overlay" class="hidden absolute inset-0 bg-purple-900/75 backdrop-blur-xs flex items-center justify-center p-4 z-20">
                         <div class="bg-white border-4 border-red-500 px-6 py-5 rounded-3xl text-center shadow-2xl animate-pop">
                             <div class="text-4xl sm:text-5xl mb-1">⏰💦</div>
-                            <div class="text-red-500 font-black text-2xl sm:text-4xl tracking-wider">TIME UP!!</div>
+                            <div class="text-red-500 font-black text-2xl sm:text-4xl tracking-wider">GAME OVER</div>
                             <p class="text-xs sm:text-sm font-extrabold text-slate-600 mt-1">制限時間終了！</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 全画面ツールバー（要望2:「黒標準」消去 / 要望3: PCで右側配置 / 要望5: ボタン間隔調整 gap-4） -->
-            <div id="fs-drawer-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-2.5 flex items-center justify-center gap-4">
-                <button id="btn-fs-clear" class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
-                    <i class="fa-solid fa-trash-can mr-1.5"></i>全消し
+            <!-- 全画面ツールバー（解答者用：全消し・解答完了） -->
+            <div id="fs-drawer-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-2 sm:p-2.5 flex items-center justify-center gap-3 sm:gap-4">
+                <button id="btn-fs-clear" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
+                    <i class="fa-solid fa-trash-can mr-1"></i>全消し
                 </button>
-                <button id="btn-fs-submit" class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
-                    <i class="fa-solid fa-bell mr-1.5"></i>解答完了！
+                <button id="btn-fs-submit" class="px-4.5 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
+                    <i class="fa-solid fa-bell mr-1"></i>解答完了！
+                </button>
+            </div>
+
+            <!-- 全画面ツールバー（司会者用：正解・不正解判定ボタン） -->
+            <div id="fs-host-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-2 sm:p-2.5 flex items-center justify-center gap-3 sm:gap-4">
+                <button id="btn-fs-correct" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap flex items-center justify-center gap-1">
+                    <span class="text-base sm:text-lg">⭕</span><span>正解！</span>
+                </button>
+                <button id="btn-fs-wrong" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap flex items-center justify-center gap-1">
+                    <span class="text-base sm:text-lg">❌</span><span>不正解</span>
                 </button>
             </div>
         </div>
@@ -307,7 +328,6 @@
             </p>
         </div>
 
-        <!-- ニックネーム -->
         <div class="mb-5">
             <label class="block text-xs font-black text-blue-600 mb-1.5">
                 <i class="fa-solid fa-user-astronaut mr-1"></i> 1. プレイヤー名を入力
@@ -316,7 +336,6 @@
                 class="w-full px-4 py-3 rounded-xl bg-slate-50 border-2 border-cyan-400 focus:border-purple-500 focus:bg-white focus:outline-none text-slate-800 font-black text-lg">
         </div>
 
-        <!-- 3つの役割選択 -->
         <div class="mb-6">
             <label class="block text-xs font-black text-purple-600 mb-2">
                 <i class="fa-solid fa-users-gear mr-1"></i> 2. スタジアムでの役割を選択（入室後も変更可）
@@ -340,7 +359,6 @@
             </div>
         </div>
 
-        <!-- 部屋作成 / 参加 -->
         <div class="space-y-4">
             <button id="btn-create-room" class="w-full py-3.5 rainbow-gradient-bar text-white font-black rounded-xl text-lg game-btn flex items-center justify-center gap-2 shadow-md">
                 <i class="fa-solid fa-flag-checkered"></i> スタジアムを開設する
@@ -476,7 +494,7 @@
             <!-- 左エリア（8カラム） -->
             <div class="lg:col-span-8 flex flex-col gap-3">
 
-                <!-- 【1】司会者コントロール＆設定パネル（表示・非表示ボタン付き） -->
+                <!-- 【1】司会者コントロール＆設定パネル -->
                 <div class="white-arcade-card rounded-2xl p-3 border-2 border-orange-400">
                     <div class="flex items-center justify-between">
                         <h3 class="font-black text-orange-600 text-sm flex items-center gap-2">
@@ -612,29 +630,9 @@
                         </div>
                     </div>
 
-                    <!-- タブ4：6種類のBGM・効果音設定（要望4: BGM複数保存・即座共有ライブラリ対応版） -->
+                    <!-- タブ4：BGM（全員共有・大容量対応）＆ 効果音設定 -->
                     <div id="tab-sounds" class="host-tab-content hidden space-y-2.5 text-xs mb-3">
-                        <!-- 要望4: 解答中BGMライブラリ管理エリア -->
-                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-400 rounded-xl p-3 space-y-2">
-                            <div class="flex items-center justify-between">
-                                <div class="font-black text-blue-800 text-sm flex items-center gap-1.5">
-                                    <i class="fa-solid fa-compact-disc text-purple-600 text-base"></i> 解答中BGM ライブラリ（複数保存＆いつでも共有可能）
-                                </div>
-                                <label class="cursor-pointer px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-black game-btn flex items-center gap-1">
-                                    <i class="fa-solid fa-plus"></i> BGMを追加保存
-                                    <input type="file" id="bgm-library-file-input" accept=".mp3,.wav,.m4a,audio/*" class="hidden">
-                                </label>
-                            </div>
-                            <p class="text-[11px] text-slate-600 font-bold">
-                                mp3などの音声ファイルを複数ツール内にストックし、いつでもワンタップで全員のルームに解答中BGMとして即座に同期・共有できます。
-                            </p>
-                            
-                            <!-- BGMライブラリ一覧 -->
-                            <div id="bgm-library-list" class="space-y-1.5 max-h-44 overflow-y-auto pr-1"></div>
-                        </div>
-
-                        <!-- 効果音・一般サウンドスロット -->
-                        <div id="sound-slots-container" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
+                        <div id="sound-slots-container" class="space-y-1.5 max-h-64 overflow-y-auto pr-1"></div>
                     </div>
 
                     <!-- リレー開始・強制クリア・強制ゲームオーバー・リセットボタン群 -->
@@ -679,7 +677,6 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ中継中
                         </div>
 
-                        <!-- 要望1: 解答完了オーバーレイを中央からパネル下部に移動（文字と被らないよう配置） -->
                         <div id="submitted-waiting-overlay" class="hidden absolute inset-0 bg-white/30 backdrop-blur-[1px] flex flex-col items-center justify-end p-3 pb-5 text-center pointer-events-none">
                             <div class="bg-white/95 border-4 border-orange-400 px-6 py-2.5 rounded-2xl shadow-xl animate-pop pointer-events-auto">
                                 <div class="text-orange-500 font-black text-base sm:text-lg mb-0.5">
@@ -690,17 +687,17 @@
                         </div>
                     </div>
 
-                    <!-- 解答者用ツール（要望2:「黒標準」消去 / 要望5: 全削除と解答完了ボタンの間隔を gap-4 へ離す） -->
-                    <div id="answerer-controls" class="hidden max-w-2xl mx-auto mt-3 flex items-center justify-end gap-4 bg-slate-50 p-2.5 rounded-xl border-2 border-blue-300">
-                        <button id="btn-canvas-clear" class="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
-                            <i class="fa-solid fa-trash-can mr-1.5"></i>全消去
+                    <!-- 解答者用ツール -->
+                    <div id="answerer-controls" class="hidden max-w-2xl mx-auto mt-3 flex items-center justify-end gap-3 sm:gap-4 bg-slate-50 p-2.5 rounded-xl border-2 border-blue-300">
+                        <button id="btn-canvas-clear" class="px-3.5 sm:px-4 py-2 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                            <i class="fa-solid fa-trash-can mr-1"></i>全消去
                         </button>
-                        <button id="btn-submit-answer" class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
-                            <i class="fa-solid fa-bell mr-1.5"></i> 解答完了！
+                        <button id="btn-submit-answer" class="px-4.5 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                            <i class="fa-solid fa-bell mr-1"></i> 解答完了！
                         </button>
                     </div>
 
-                    <!-- 司会者用 ○×判定ボタン -->
+                    <!-- 司会者用 ○×判定ボタン（通常画面用） -->
                     <div id="host-judge-controls" class="hidden max-w-2xl mx-auto mt-3 bg-orange-50 p-3 rounded-2xl border-2 border-orange-400">
                         <div class="text-center text-xs font-black text-orange-700 mb-2">
                             <i class="fa-solid fa-gavel mr-1"></i> 司会者判定（提出前でもリアルタイムで即判定できます！）
@@ -732,7 +729,7 @@
             <!-- 右エリア（4カラム） -->
             <aside class="lg:col-span-4 flex flex-col gap-3">
 
-                <!-- チーム＆チームポイントボード（表示・非表示ボタン付き） -->
+                <!-- チーム＆チームポイントボード -->
                 <div class="white-arcade-card rounded-2xl p-3 border-2 border-purple-400">
                     <div class="flex items-center justify-between">
                         <h3 class="font-black text-purple-600 text-sm flex items-center gap-1.5">
@@ -791,7 +788,7 @@
                     <div id="teams-list-container" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
                 </div>
 
-                <!-- 今回の出場メンバー解答順番＆個人ポイントボード（表示・非表示ボタン付き） -->
+                <!-- 今回の出場メンバー解答順番＆個人ポイントボード -->
                 <div class="white-arcade-card rounded-2xl p-3 border-2 border-blue-400">
                     <div class="flex items-center justify-between">
                         <h3 class="font-black text-blue-600 text-sm flex items-center gap-1.5">
@@ -950,11 +947,11 @@
         }
 
         // ==========================================
-        // 音声ファイル高速化：クライアント側自動軽量化・圧縮関数
+        // 音声ファイル自動軽量化・圧縮関数（5000KB以上完全対応）
         // ==========================================
-        async function compressAudioFile(file) {
-            // 2MB以下の軽量ファイルはそのまま通過
-            if (file.size <= 2 * 1024 * 1024) {
+        async function compressAudioFile(file, forceTargetRate = 16000) {
+            // 1.5MB以下かつ強制圧縮でなければそのまま返す
+            if (file.size <= 1.5 * 1024 * 1024 && forceTargetRate === 16000) {
                 return file;
             }
 
@@ -963,8 +960,16 @@
                 const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const audioBuffer = await tempCtx.decodeAudioData(arrayBuffer);
 
-                // モノラル(1ch) & 16kHzにダウンサンプリングしてFirebase制限内に確実におさめる
-                const targetSampleRate = 16000;
+                // 長さに応じてサンプルレートを自動最適化（5MB以上の長尺BGMも確実に軽量化）
+                let targetSampleRate = forceTargetRate;
+                if (audioBuffer.duration > 180) {
+                    targetSampleRate = 8000;
+                } else if (audioBuffer.duration > 90) {
+                    targetSampleRate = 11025;
+                } else if (file.size > 4.5 * 1024 * 1024) {
+                    targetSampleRate = 12000;
+                }
+
                 const targetLength = Math.ceil(audioBuffer.duration * targetSampleRate);
                 const offlineCtx = new OfflineAudioContext(1, targetLength, targetSampleRate);
 
@@ -974,15 +979,16 @@
                 source.start(0);
 
                 const renderedBuffer = await offlineCtx.startRendering();
-
+                if (tempCtx.state !== 'closed') {
+                    await tempCtx.close().catch(() => {});
+                }
                 const wavBlob = audioBufferToWavBlob(renderedBuffer);
                 if (wavBlob) {
-                    const newName = file.name.replace(/\.[^/.]+$/, "") + "_compressed.wav";
+                    const newName = file.name.replace(/\.[^/.]+$/, "") + "_shared.wav";
                     return new File([wavBlob], newName, { type: "audio/wav" });
                 }
             } catch (e) {
-                console.warn("Audio compression fallback to original:", e);
-                // 失敗した場合は元のファイルをそのまま返すことで「音声の読み込みに失敗しました」を防ぐ
+                console.warn("Audio compression fallback:", e);
                 return file;
             }
             return file;
@@ -1035,7 +1041,6 @@
             return new Blob([out.buffer], { type: 'audio/wav' });
         }
 
-        // ファイルをDataURL(Base64)に変換するヘルパー
         function fileToDataURL(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1045,8 +1050,171 @@
             });
         }
 
+        // 音声データを全プレイヤーへ確実に共有（Firebase Storage優先 → 失敗時Firestoreチャンク分割保存）
+        async function uploadAndShareAudio(roomId, key, rawFile, statusEl) {
+            const audioId = `${key}_${Date.now()}`;
+            // まず5MB以上のファイルでもブラウザで扱いやすく・確実に共有できるよう最適化
+            if (statusEl) statusEl.textContent = `⏳ 音声最適化中 (${(rawFile.size / 1024).toFixed(0)}KB)...`;
+            const optimizedFile = await compressAudioFile(rawFile);
+
+            // 方法A: Firebase Storage へのアップロード（タイムアウト12秒付き）
+            try {
+                if (statusEl) statusEl.textContent = `☁️ 全員へ共有アップロード中...`;
+                const sRef = storageRef(storage, `stadium_audio/${appId}/${roomId}/${audioId}_${optimizedFile.name}`);
+                const uploadTask = uploadBytesResumable(sRef, optimizedFile);
+
+                const downloadUrl = await new Promise((resolve, reject) => {
+                    const timer = setTimeout(() => {
+                        try { uploadTask.cancel(); } catch (e) {}
+                        reject(new Error("Storage upload timeout"));
+                    }, 12000);
+
+                    uploadTask.on(
+                        'state_changed',
+                        (snap) => {
+                            if (statusEl && snap.totalBytes > 0) {
+                                const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+                                statusEl.textContent = `☁️ アップロード中... ${pct}%`;
+                            }
+                        },
+                        (err) => {
+                            clearTimeout(timer);
+                            reject(err);
+                        },
+                        async () => {
+                            clearTimeout(timer);
+                            try {
+                                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                                resolve(url);
+                            } catch (e) {
+                                reject(e);
+                            }
+                        }
+                    );
+                });
+
+                return {
+                    mode: 'url',
+                    audioId,
+                    url: downloadUrl,
+                    fileName: rawFile.name
+                };
+            } catch (storageErr) {
+                console.warn("Storage upload skipped/failed, falling back to Firestore chunked sync:", storageErr);
+            }
+
+            // 方法B: Storageが使えない/エラーになる環境でも確実に全プレイヤーに共有できるFirestoreチャンク分割保存
+            if (statusEl) statusEl.textContent = `📡 ルーム内データ同期中...`;
+            let fileForChunks = optimizedFile;
+            let dataUrl = await fileToDataURL(fileForChunks);
+
+            // Base64が大きすぎる場合(8MB超)はさらにサンプルレートを下げて再圧縮
+            if (dataUrl.length > 8000000) {
+                fileForChunks = await compressAudioFile(rawFile, 8000);
+                dataUrl = await fileToDataURL(fileForChunks);
+            }
+            if (dataUrl.length > 10000000) {
+                throw new Error("音声時間が長すぎます（約8分以内にしてください）");
+            }
+
+            // Firestore1ドキュメント1MB制限を安全に回避するため、650KBずつ分割して保存
+            const CHUNK_SIZE = 650000;
+            const totalChunks = Math.ceil(dataUrl.length / CHUNK_SIZE);
+            const chunksCol = collection(db, 'artifacts', appId, 'public', 'data', `stadium_rainbow_audio_${roomId}`);
+
+            for (let i = 0; i < totalChunks; i++) {
+                if (statusEl) statusEl.textContent = `📡 共有データ送信中 (${i + 1}/${totalChunks})...`;
+                const chunkStr = dataUrl.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+                const chunkDocRef = doc(chunksCol, `${audioId}_part_${i}`);
+                await setDoc(chunkDocRef, {
+                    audioId,
+                    index: i,
+                    totalChunks,
+                    data: chunkStr,
+                    createdAt: Date.now()
+                });
+            }
+
+            return {
+                mode: 'chunks',
+                audioId,
+                totalChunks,
+                localDataUrl: dataUrl,
+                fileName: rawFile.name
+            };
+        }
+
+        // 他プレイヤー側からチャンク分割された共有音声を復元して読み込む
+        const loadingSharedAudioIds = new Set();
+        async function loadSharedAudioFromRoom(roomId, key, sharedMeta) {
+            const slot = customMediaPlayers[key];
+            if (!slot) return;
+
+            if (!sharedMeta || !sharedMeta.audioId) {
+                if (slot.syncedAudioId) {
+                    slot.videoEl.pause();
+                    slot.videoEl.removeAttribute('src');
+                    slot.videoEl.load();
+                    slot.hasCustom = false;
+                    slot.currentUrl = '';
+                    slot.syncedAudioId = '';
+                    slot.fileName = key === 'bgm' ? '内蔵シンセBGM' : '内蔵ゲームサウンド';
+                    const nameEl = document.getElementById(`sound-name-${key}`);
+                    if (nameEl) nameEl.textContent = slot.fileName;
+                }
+                return;
+            }
+
+            if (slot.syncedAudioId === sharedMeta.audioId || loadingSharedAudioIds.has(sharedMeta.audioId)) {
+                return;
+            }
+
+            loadingSharedAudioIds.add(sharedMeta.audioId);
+            const nameEl = document.getElementById(`sound-name-${key}`);
+            if (nameEl) nameEl.textContent = `⏳ 共有音声を受信中: ${sharedMeta.fileName}...`;
+
+            try {
+                let playableSrc = '';
+                if (sharedMeta.mode === 'url' && sharedMeta.url) {
+                    playableSrc = sharedMeta.url;
+                } else if (sharedMeta.mode === 'chunks' && sharedMeta.totalChunks > 0) {
+                    const chunksCol = collection(db, 'artifacts', appId, 'public', 'data', `stadium_rainbow_audio_${roomId}`);
+                    const parts = [];
+                    for (let i = 0; i < sharedMeta.totalChunks; i++) {
+                        const partSnap = await getDoc(doc(chunksCol, `${sharedMeta.audioId}_part_${i}`));
+                        if (!partSnap.exists()) {
+                            throw new Error(`音声チャンク ${i + 1}/${sharedMeta.totalChunks} が見つかりません`);
+                        }
+                        parts.push(partSnap.data().data);
+                    }
+                    playableSrc = parts.join('');
+                }
+
+                if (!playableSrc) throw new Error("有効な音声データがありません");
+
+                slot.videoEl.pause();
+                slot.videoEl.src = playableSrc;
+                slot.videoEl.load();
+                slot.hasCustom = true;
+                slot.currentUrl = playableSrc;
+                slot.syncedAudioId = sharedMeta.audioId;
+                slot.fileName = sharedMeta.fileName;
+                if (nameEl) nameEl.textContent = `🌐 全員共有中: ${sharedMeta.fileName}`;
+
+                if (key === 'bgm' && roomState?.status === 'playing') {
+                    stopQuizBgm();
+                    startQuizBgm();
+                }
+            } catch (err) {
+                console.error("Failed to load shared audio:", err);
+                if (nameEl) nameEl.textContent = `⚠️ 受信エラー: ${sharedMeta.fileName}`;
+            } finally {
+                loadingSharedAudioIds.delete(sharedMeta.audioId);
+            }
+        }
+
         // ==========================================
-        // 4. BGM・効果音マネージャー (要望4: BGM複数保存・即座共有機能追加版)
+        // 4. BGM・効果音マネージャー（全員共有＆シンセBGM機能）
         // ==========================================
         let isMuted = false;
         let masterVolume = 0.45;
@@ -1056,31 +1224,15 @@
         let isBgmRunning = false;
 
         const SOUND_DEFS = [
-            { key: 'submit', label: '② 解答完了ボタン効果音（SE）', icon: 'fa-solid fa-bell text-orange-500', loop: false },
-            { key: 'correct', label: '③ 正解時効果音（SE）', icon: 'fa-regular fa-circle text-red-500', loop: false },
-            { key: 'wrong', label: '④ 不正解時効果音（SE）', icon: 'fa-solid fa-xmark text-blue-500', loop: false },
-            { key: 'timeup', label: '⑤ タイムアップ音・BGM', icon: 'fa-solid fa-hourglass-end text-purple-500', loop: false },
-            { key: 'clear', label: '⑥ ステージクリア音・BGM', icon: 'fa-solid fa-trophy text-green-500', loop: false }
+            { key: 'bgm', label: '① 解答中BGM（5MB以上OK・全員に自動共有）', icon: 'fa-solid fa-music text-purple-600', loop: true },
+            { key: 'submit', label: '② 解答完了ボタン効果音（SE・全員共有）', icon: 'fa-solid fa-bell text-orange-500', loop: false },
+            { key: 'correct', label: '③ 正解時効果音（SE・全員共有）', icon: 'fa-regular fa-circle text-red-500', loop: false },
+            { key: 'wrong', label: '④ 不正解時効果音（SE・全員共有）', icon: 'fa-solid fa-xmark text-blue-500', loop: false },
+            { key: 'timeup', label: '⑤ ゲームオーバー音・BGM（全員共有）', icon: 'fa-solid fa-hourglass-end text-purple-500', loop: false },
+            { key: 'clear', label: '⑥ ステージクリア音・BGM（全員共有）', icon: 'fa-solid fa-trophy text-green-500', loop: false }
         ];
 
-        const customMediaPlayers = {
-            bgm: {
-                videoEl: null,
-                hasCustom: false,
-                currentUrl: '',
-                fileName: '内蔵ゲームBGM'
-            }
-        };
-
-        // 初期BGMエレメントの生成
-        const bgmVideoEl = document.createElement('video');
-        bgmVideoEl.className = 'hidden';
-        bgmVideoEl.playsInline = true;
-        bgmVideoEl.preload = 'auto';
-        bgmVideoEl.crossOrigin = 'anonymous';
-        bgmVideoEl.loop = false;
-        document.body.appendChild(bgmVideoEl);
-        customMediaPlayers.bgm.videoEl = bgmVideoEl;
+        const customMediaPlayers = {};
 
         function initSoundSlotsUI() {
             const container = document.getElementById('sound-slots-container');
@@ -1091,15 +1243,15 @@
                 videoEl.className = 'hidden';
                 videoEl.playsInline = true;
                 videoEl.preload = 'auto';
-                videoEl.crossOrigin = 'anonymous';
-                videoEl.loop = false;
+                videoEl.loop = def.loop;
                 document.body.appendChild(videoEl);
 
                 customMediaPlayers[def.key] = {
                     videoEl,
                     hasCustom: false,
                     currentUrl: '',
-                    fileName: '内蔵ゲームサウンド'
+                    syncedAudioId: '',
+                    fileName: def.key === 'bgm' ? '内蔵シンセBGM' : '内蔵ゲームサウンド'
                 };
 
                 const row = document.createElement('div');
@@ -1109,27 +1261,18 @@
                         <i class="${def.icon} w-4 text-center"></i>
                         <div class="truncate w-full">
                             <div class="font-black text-slate-800 text-xs">${def.label}</div>
-                            <div id="sound-name-${def.key}" class="text-[10px] text-green-600 font-bold truncate">内蔵ゲームサウンド</div>
-                            <div id="upload-progress-box-${def.key}" class="hidden w-full mt-1">
-                                <div class="flex justify-between text-[9px] font-black text-blue-600 mb-0.5">
-                                    <span id="upload-status-text-${def.key}">処理中...</span>
-                                    <span id="upload-pct-text-${def.key}">100%</span>
-                                </div>
-                                <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                    <div id="upload-bar-${def.key}" class="h-full bg-blue-500 transition-all duration-150" style="width: 100%"></div>
-                                </div>
-                            </div>
+                            <div id="sound-name-${def.key}" class="text-[10px] text-green-600 font-bold truncate">${customMediaPlayers[def.key].fileName}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <label id="sound-label-${def.key}" class="cursor-pointer px-2.5 py-1 bg-white hover:bg-blue-50 border border-blue-300 rounded-lg text-[11px] font-black text-blue-600 transition">
                             <i class="fa-solid fa-folder-open mr-1"></i>ファイル選択
-                            <input type="file" data-sound-key="${def.key}" accept=".mp3,.mp4,audio/*,video/mp4" class="sound-file-input hidden">
+                            <input type="file" data-sound-key="${def.key}" accept=".mp3,.wav,.m4a,.ogg,.aac,audio/*,video/mp4" class="sound-file-input hidden">
                         </label>
                         <button type="button" data-test-key="${def.key}" class="sound-test-btn px-2.5 py-1 bg-yellow-400 hover:bg-yellow-500 text-slate-900 rounded-lg text-[11px] font-black transition">
                             <i class="fa-solid fa-play"></i> 試聴
                         </button>
-                        <button type="button" data-reset-key="${def.key}" class="sound-reset-btn px-2 py-1 bg-slate-200 hover:bg-red-500 text-slate-600 hover:text-white rounded-lg text-[11px] transition" title="内蔵サウンドに戻す">
+                        <button type="button" data-reset-key="${def.key}" class="sound-reset-btn px-2 py-1 bg-slate-200 hover:bg-red-500 text-slate-600 hover:text-white rounded-lg text-[11px] transition" title="初期サウンドに戻す">
                             <i class="fa-solid fa-rotate-left"></i>
                         </button>
                     </div>
@@ -1141,36 +1284,60 @@
                 inp.addEventListener('change', async (e) => {
                     const rawFile = e.target.files[0];
                     const key = inp.dataset.soundKey;
-                    if (!rawFile || !customMediaPlayers[key] || !currentRoomId) return;
+                    if (!rawFile || !customMediaPlayers[key]) return;
+                    if (!currentRoomId) {
+                        showToast("⚠️ ルーム入室後に選択してください", "error");
+                        e.target.value = '';
+                        return;
+                    }
 
-                    const progressBox = document.getElementById(`upload-progress-box-${key}`);
-                    progressBox.classList.remove('hidden');
+                    const statusEl = document.getElementById(`sound-name-${key}`);
+                    inp.disabled = true;
 
                     try {
-                        const file = await compressAudioFile(rawFile);
-                        const dataUrl = await fileToDataURL(file);
+                        const sharedResult = await uploadAndShareAudio(currentRoomId, key, rawFile, statusEl);
+                        const localPlayableUrl = sharedResult.mode === 'url' ? sharedResult.url : sharedResult.localDataUrl;
 
-                        customMediaPlayers[key].videoEl.src = dataUrl;
+                        // まず自分の端末に即セット
+                        customMediaPlayers[key].videoEl.pause();
+                        customMediaPlayers[key].videoEl.src = localPlayableUrl;
                         customMediaPlayers[key].videoEl.load();
                         customMediaPlayers[key].hasCustom = true;
-                        customMediaPlayers[key].currentUrl = dataUrl;
-                        customMediaPlayers[key].fileName = file.name;
-                        document.getElementById(`sound-name-${key}`).textContent = `🎵 ${file.name} (全員共有)`;
+                        customMediaPlayers[key].currentUrl = localPlayableUrl;
+                        customMediaPlayers[key].syncedAudioId = sharedResult.audioId;
+                        customMediaPlayers[key].fileName = rawFile.name;
+                        if (statusEl) statusEl.textContent = `🌐 全員共有中: ${rawFile.name}`;
+
+                        // Firestoreのルーム情報に共有メタデータを書き込んで全プレイヤーに配信
+                        const roomMetaPayload = {
+                            mode: sharedResult.mode,
+                            audioId: sharedResult.audioId,
+                            fileName: sharedResult.fileName,
+                            updatedAt: Date.now()
+                        };
+                        if (sharedResult.mode === 'url') {
+                            roomMetaPayload.url = sharedResult.url;
+                        } else {
+                            roomMetaPayload.totalChunks = sharedResult.totalChunks;
+                        }
 
                         const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
                         await updateDoc(roomRef, {
-                            [`sharedAudioConfigs.${key}`]: {
-                                fileName: file.name,
-                                dataUrl: dataUrl,
-                                updatedAt: Date.now()
-                            }
+                            [`sharedSounds.${key}`]: roomMetaPayload
                         });
-                        showToast(`「${file.name}」を全員のルームに同期適用しました！`, "success");
+
+                        showToast(`🌐 「${rawFile.name}」を設定し、全プレイヤーに共有しました！`, "success");
+
+                        if (key === 'bgm' && roomState?.status === 'playing') {
+                            stopQuizBgm();
+                            startQuizBgm();
+                        }
                     } catch (err) {
                         console.error(err);
-                        showToast("⚠️ 音声の読み込みに失敗しました", "error");
+                        if (statusEl) statusEl.textContent = `⚠️ 共有エラー`;
+                        showToast(`⚠️ 音声の共有に失敗しました: ${err.message || '不明なエラー'}`, "error");
                     } finally {
-                        setTimeout(() => progressBox.classList.add('hidden'), 800);
+                        inp.disabled = false;
                         e.target.value = '';
                     }
                 });
@@ -1179,7 +1346,29 @@
             container.querySelectorAll('.sound-test-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const key = btn.dataset.testKey;
-                    playGameEventSound(key);
+                    if (key === 'bgm') {
+                        const slot = customMediaPlayers.bgm;
+                        if (slot.hasCustom && slot.videoEl.src) {
+                            if (!slot.videoEl.paused) {
+                                slot.videoEl.pause();
+                                btn.innerHTML = '<i class="fa-solid fa-play"></i> 試聴';
+                            } else {
+                                slot.videoEl.volume = masterVolume;
+                                slot.videoEl.play().catch(() => {});
+                                btn.innerHTML = '<i class="fa-solid fa-stop"></i> 停止';
+                            }
+                        } else {
+                            if (isBgmRunning) {
+                                stopQuizBgm();
+                                btn.innerHTML = '<i class="fa-solid fa-play"></i> 試聴';
+                            } else {
+                                startQuizBgm();
+                                btn.innerHTML = '<i class="fa-solid fa-stop"></i> 停止';
+                            }
+                        }
+                    } else {
+                        playGameEventSound(key);
+                    }
                 });
             });
 
@@ -1193,217 +1382,32 @@
                     slot.videoEl.load();
                     slot.hasCustom = false;
                     slot.currentUrl = '';
-                    slot.fileName = '内蔵ゲームサウンド';
-                    document.getElementById(`sound-name-${key}`).textContent = '内蔵ゲームサウンド';
+                    slot.syncedAudioId = '';
+                    slot.fileName = key === 'bgm' ? '内蔵シンセBGM' : '内蔵ゲームサウンド';
+                    document.getElementById(`sound-name-${key}`).textContent = slot.fileName;
 
                     if (currentRoomId) {
-                        const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                        await updateDoc(roomRef, {
-                            [`sharedAudioConfigs.${key}`]: null
-                        });
-                    }
-                    showToast("内蔵ゲームサウンドに戻しました", "info");
-                });
-            });
-        }
-
-        initSoundSlotsUI();
-
-        document.getElementById('bgm-library-file-input').addEventListener('change', async (e) => {
-            const rawFile = e.target.files[0];
-            if (!rawFile || !currentRoomId || !roomState) return;
-
-            showToast(`「${rawFile.name}」をライブラリに保存中...`, "info");
-            
-            try {
-                let fileToUse = rawFile;
-                // ファイルサイズが大きい場合の自動圧縮＆安全なフォールバック
-                try {
-                    fileToUse = await compressAudioFile(rawFile);
-                } catch (compressErr) {
-                    console.warn("Compression skipped, using original file:", compressErr);
-                }
-
-                const dataUrl = await fileToDataURL(fileToUse);
-
-                const currentLib = roomState.bgmLibrary || [];
-                const newItem = {
-                    id: `bgm_${Date.now()}`,
-                    fileName: rawFile.name,
-                    dataUrl: dataUrl,
-                    addedAt: Date.now()
-                };
-
-                const nextLib = [...currentLib, newItem];
-                
-                try {
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                    await updateDoc(roomRef, { bgmLibrary: nextLib });
-                    showToast(`「${rawFile.name}」を高音質のままライブラリに保存しました！`, "success");
-                } catch (firestoreErr) {
-                    console.warn("Firestore limit exceeded, using local fallback:", firestoreErr);
-                    // Firestoreの制限を超える大きなファイルの場合でもローカルメモリで再生＆軽量化版で再試行
-                    const compressedFile = await compressAudioFile(rawFile);
-                    const compDataUrl = await fileToDataURL(compressedFile);
-                    newItem.dataUrl = compDataUrl;
-                    newItem.fileName = compressedFile.name + " (自動軽量化)";
-                    
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                    await updateDoc(roomRef, { bgmLibrary: [...currentLib, newItem] });
-                    showToast(`「${rawFile.name}」を自動調整して全員のルームに共有しました！`, "success");
-                }
-            } catch (err) {
-                console.error(err);
-                // 失敗した場合でもアプリを止めず、ブラウザのURLオブジェクトでフォールバック再生
-                try {
-                    const fallbackUrl = URL.createObjectURL(rawFile);
-                    const currentLib = roomState.bgmLibrary || [];
-                    const newItem = {
-                        id: `bgm_${Date.now()}`,
-                        fileName: rawFile.name,
-                        dataUrl: fallbackUrl,
-                        addedAt: Date.now()
-                    };
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                    await updateDoc(roomRef, { bgmLibrary: [...currentLib, newItem] });
-                    showToast(`「${rawFile.name}」をローカル音声として追加しました！`, "success");
-                } catch (fallbackErr) {
-                    showToast("⚠️ 音声ファイルの読み込みに失敗しました", "error");
-                }
-            } finally {
-                e.target.value = '';
-            }
-        });
-
-        function renderBgmLibraryUI(library, activeAudioConfig) {
-            const listEl = document.getElementById('bgm-library-list');
-            if (!listEl) return;
-            listEl.innerHTML = '';
-
-            const lib = library || [];
-            if (lib.length === 0) {
-                listEl.innerHTML = `
-                    <div class="text-center py-3 bg-white/70 rounded-lg border border-blue-200 text-slate-400 font-bold text-xs">
-                        保存されたBGMはまだありません。「+ BGMを追加保存」ボタンから追加できます。
-                    </div>
-                `;
-                return;
-            }
-
-            const currentActiveUrl = activeAudioConfig?.bgm?.dataUrl || '';
-
-            lib.forEach((item) => {
-                const isSelected = currentActiveUrl === item.dataUrl;
-                const row = document.createElement('div');
-                row.className = `p-2 rounded-lg border flex flex-wrap items-center justify-between gap-2 transition ${
-                    isSelected ? 'bg-purple-100 border-purple-500 shadow-sm' : 'bg-white border-slate-200 hover:border-blue-300'
-                }`;
-
-                row.innerHTML = `
-                    <div class="flex items-center gap-2 min-w-0 flex-1">
-                        <i class="fa-solid fa-music ${isSelected ? 'text-purple-600' : 'text-slate-400'}"></i>
-                        <span class="font-black text-slate-800 text-xs truncate">${escapeHtml(item.fileName)}</span>
-                        ${isSelected ? '<span class="bg-purple-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">全員共有中</span>' : ''}
-                    </div>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <button type="button" data-play-bgm="${item.dataUrl}" class="play-bgm-preview-btn px-2.5 py-1 bg-yellow-400 hover:bg-yellow-500 text-slate-900 rounded-md text-[11px] font-black">
-                            <i class="fa-solid fa-play"></i> 試聴
-                        </button>
-                        <button type="button" data-select-bgm="${item.id}" class="select-bgm-share-btn px-3 py-1 ${isSelected ? 'bg-green-600 text-white' : 'bg-purple-500 hover:bg-purple-600 text-white'} rounded-md text-[11px] font-black game-btn">
-                            <i class="fa-solid fa-share-nodes mr-1"></i>${isSelected ? '共有中' : 'このBGMを共有適用'}
-                        </button>
-                        <button type="button" data-del-bgm="${item.id}" class="del-bgm-btn px-2 py-1 bg-slate-100 hover:bg-red-500 text-slate-500 hover:text-white border border-slate-300 rounded-md text-[11px]">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                listEl.appendChild(row);
-            });
-
-            listEl.querySelectorAll('.play-bgm-preview-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const url = btn.dataset.playBgm;
-                    if (customMediaPlayers.bgm.videoEl.src === url && !customMediaPlayers.bgm.videoEl.paused) {
-                        customMediaPlayers.bgm.videoEl.pause();
-                        btn.innerHTML = '<i class="fa-solid fa-play"></i> 試聴';
-                    } else {
-                        customMediaPlayers.bgm.videoEl.src = url;
-                        customMediaPlayers.bgm.videoEl.volume = masterVolume;
-                        customMediaPlayers.bgm.videoEl.play().catch(() => {});
-                        btn.innerHTML = '<i class="fa-solid fa-stop"></i> 停止';
-                    }
-                });
-            });
-
-            listEl.querySelectorAll('.select-bgm-share-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.dataset.selectBgm;
-                    const targetItem = lib.find(x => x.id === id);
-                    if (!targetItem || !currentRoomId) return;
-
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                    await updateDoc(roomRef, {
-                        [`sharedAudioConfigs.bgm`]: {
-                            fileName: targetItem.fileName,
-                            dataUrl: targetItem.dataUrl,
-                            updatedAt: Date.now()
-                        }
-                    });
-                    showToast(`「${targetItem.fileName}」を全体の解答中BGMに設定・共有しました！`, "success");
-                });
-            });
-
-            listEl.querySelectorAll('.del-bgm-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.dataset.delBgm;
-                    const nextLib = lib.filter(x => x.id !== id);
-                    const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
-                    await updateDoc(roomRef, { bgmLibrary: nextLib });
-                    showToast("BGMをライブラリから削除しました", "info");
-                });
-            });
-        }
-
-        function applySharedAudioConfigs(configs) {
-            if (!configs) return;
-            Object.keys(configs).forEach(key => {
-                const item = configs[key];
-                const slot = customMediaPlayers[key];
-                if (!slot) return;
-
-                if (item && item.dataUrl) {
-                    if (!slot.hasCustom || slot.currentUrl !== item.dataUrl) {
-                        slot.videoEl.pause();
-                        slot.videoEl.src = item.dataUrl;
-                        slot.videoEl.load();
-                        slot.hasCustom = true;
-                        slot.currentUrl = item.dataUrl;
-                        slot.fileName = item.fileName || '共有音声ファイル';
-                        const nameEl = document.getElementById(`sound-name-${key}`);
-                        if (nameEl) nameEl.textContent = `🎵 ${slot.fileName} (全員共有)`;
-
-                        if (key === 'bgm' && roomState?.status === 'playing') {
-                            stopQuizBgm();
-                            startQuizBgm();
+                        try {
+                            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+                            await updateDoc(roomRef, {
+                                [`sharedSounds.${key}`]: null
+                            });
+                        } catch (e) {
+                            console.error(e);
                         }
                     }
-                } else if (!item && slot.hasCustom) {
-                    slot.videoEl.pause();
-                    slot.videoEl.removeAttribute('src');
-                    slot.videoEl.load();
-                    slot.hasCustom = false;
-                    slot.currentUrl = '';
-                    slot.fileName = '内蔵ゲームサウンド';
-                    const nameEl = document.getElementById(`sound-name-${key}`);
-                    if (nameEl) nameEl.textContent = '内蔵ゲームサウンド';
+
+                    showToast("全員のサウンドを初期設定に戻しました", "info");
 
                     if (key === 'bgm' && roomState?.status === 'playing') {
                         stopQuizBgm();
                         startQuizBgm();
                     }
-                }
+                });
             });
         }
+
+        initSoundSlotsUI();
 
         function ensureAudioCtx() {
             if (!audioCtx) {
@@ -1451,7 +1455,6 @@
             if (isMuted) return;
             const slot = customMediaPlayers[type];
             if (slot && slot.hasCustom && slot.videoEl.src) {
-                stopAllEventMedia();
                 slot.videoEl.volume = masterVolume;
                 slot.videoEl.currentTime = 0;
                 slot.videoEl.play().catch(() => {});
@@ -1536,15 +1539,13 @@
 
             const bgmSlot = customMediaPlayers.bgm;
             if (bgmSlot && bgmSlot.hasCustom && bgmSlot.currentUrl) {
-                bgmSlot.videoEl.loop = false;
                 bgmSlot.videoEl.volume = masterVolume;
-                bgmSlot.videoEl.playbackRate = 1.0;
                 bgmSlot.videoEl.currentTime = 0;
                 const playPromise = bgmSlot.videoEl.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise.catch((err) => {
                         console.warn("BGM autoplay blocked:", err);
-                        showToast("🔊 画面をタップすると共有BGMが再生されます", "info");
+                        showToast("🔊 画面をタップするとBGMが再生されます", "info");
                         const resumeOnTap = () => {
                             if (isBgmRunning && !isMuted && bgmSlot.hasCustom) {
                                 bgmSlot.videoEl.volume = masterVolume;
@@ -1598,7 +1599,6 @@
             if (p && !p.paused) {
                 p.pause();
             }
-            if (p) p.playbackRate = 1.0;
         }
 
         document.getElementById('bgm-volume-slider').addEventListener('input', (e) => {
@@ -1744,8 +1744,6 @@
                     teams: {},
                     problemImages: [],
                     activeImageIndex: -1,
-                    bgmLibrary: [],
-                    sharedAudioConfigs: {},
                     endTime: 0,
                     turnIndex: 0,
                     submittedFlag: false,
@@ -1753,6 +1751,7 @@
                     submitCountEvent: 0,
                     correctCountEvent: 0,
                     wrongCountEvent: 0,
+                    sharedSounds: {},
                     clearedFlips: [],
                     answererOrder: initialOrder,
                     participants: {
@@ -1888,7 +1887,6 @@
         let lastWrongEvent = 0;
         let lastActiveImageIndex = -1;
         let seenStrokeIds = new Set();
-        let appliedAudioSig = "";
 
         let isHostPanelManuallyToggled = false;
 
@@ -1911,7 +1909,6 @@
             lastCorrectEvent = 0;
             lastWrongEvent = 0;
             lastActiveImageIndex = -1;
-            appliedAudioSig = "";
             isHostPanelManuallyToggled = false;
 
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', roomId);
@@ -1945,15 +1942,16 @@
             const prevStatus = roomState ? roomState.status : null;
             roomState = data;
 
+            // 全プレイヤー共通：司会者が設定した共有BGM・効果音を自動受信＆同期
+            if (currentRoomId) {
+                const sharedSounds = data.sharedSounds || {};
+                SOUND_DEFS.forEach(def => {
+                    loadSharedAudioFromRoom(currentRoomId, def.key, sharedSounds[def.key] || null);
+                });
+            }
+
             const me = data.participants?.[currentUser.uid];
             const myRole = me ? me.role : 'spectator';
-
-            const audioConfigs = data.sharedAudioConfigs || {};
-            const sig = JSON.stringify(audioConfigs);
-            if (sig !== appliedAudioSig) {
-                appliedAudioSig = sig;
-                applySharedAudioConfigs(audioConfigs);
-            }
 
             if (data.clearVersion && data.clearVersion !== lastClearVer) {
                 lastClearVer = data.clearVersion;
@@ -2018,7 +2016,7 @@
                 waiting: { text: '作戦会議中', cls: 'bg-slate-100 border-slate-300 text-slate-700' },
                 playing: { text: '🔥 リレー挑戦中！', cls: 'bg-red-50 border-red-500 text-red-600 animate-pulse' },
                 cleared: { text: '🎉 全問クリア！', cls: 'bg-green-50 border-green-500 text-green-600' },
-                gameover: { text: '⏰ タイムアップ', cls: 'bg-purple-50 border-purple-500 text-purple-600' }
+                gameover: { text: '💀 ゲームオーバー', cls: 'bg-purple-50 border-purple-500 text-purple-600' }
             };
             const st = statusMap[data.status] || statusMap.waiting;
             const stEl = document.getElementById('disp-status-badge');
@@ -2100,7 +2098,7 @@
             } else if (data.status === 'gameover') {
                 resBanner.className = 'rounded-2xl p-6 text-center border-4 border-purple-500 bg-purple-50 text-slate-800 shadow-lg animate-pop';
                 document.getElementById('result-icon').textContent = '⏰💦';
-                document.getElementById('result-title').textContent = 'TIME UP...';
+                document.getElementById('result-title').textContent = 'GAME OVER';
                 document.getElementById('result-title').className = 'text-3xl sm:text-4xl font-black tracking-wider mb-1 text-purple-600';
                 document.getElementById('result-subtitle').textContent = `惜しい！結果は ${clearedCount} / ${target} 問正解でした！`;
             } else {
@@ -2118,7 +2116,6 @@
                 }
                 renderHostImageGallery(images, activeImgIdx);
                 renderHostTeamSelectorAndRoster(data);
-                renderBgmLibraryUI(data.bgmLibrary, data.sharedAudioConfigs);
             } else {
                 hostPanelWrapper.classList.add('hidden');
                 hostPanelEl.classList.add('hidden');
@@ -2130,6 +2127,7 @@
             const activeUid = activeOrder.length > 0 ? activeOrder[data.turnIndex % activeOrder.length] : null;
             const activePlayer = activeUid ? data.participants?.[activeUid] : null;
             const isMyTurn = (data.status === 'playing' && activeUid === currentUser.uid && myRole === 'answerer');
+            const isHostPlaying = (myRole === 'host' && data.status === 'playing');
 
             const drawerNameEl = document.getElementById('disp-current-drawer');
             const turnBadgeEl = document.getElementById('turn-instruction-badge');
@@ -2168,7 +2166,9 @@
             document.getElementById('submitted-waiting-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag));
 
             document.getElementById('fs-drawer-toolbar').classList.toggle('hidden', !canDraw);
-            document.getElementById('fs-spectating-badge').classList.toggle('hidden', canDraw || data.status !== 'playing');
+            document.getElementById('fs-host-toolbar').classList.toggle('hidden', !isHostPlaying);
+
+            document.getElementById('fs-spectating-badge').classList.toggle('hidden', canDraw || isHostPlaying || data.status !== 'playing');
             document.getElementById('fs-submitted-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag));
             document.getElementById('fs-timeup-overlay').classList.toggle('hidden', data.status !== 'gameover');
 
@@ -2851,7 +2851,8 @@
             showToast("待機状態にリセットしました", "info");
         });
 
-        document.getElementById('btn-judge-correct').addEventListener('click', async () => {
+        // 共通判定ロジック（正解）
+        async function handleJudgeCorrect() {
             if (!currentRoomId || !roomState || roomState.status !== 'playing') return;
             const activeOrder = getEffectiveRelayOrder(roomState);
             if (activeOrder.length === 0) return;
@@ -2889,9 +2890,10 @@
                 });
                 triggerBotAutoDrawIfNeeded(nextTurnIdx, activeOrder, roomState.participants);
             }
-        });
+        }
 
-        document.getElementById('btn-judge-wrong').addEventListener('click', async () => {
+        // 共通判定ロジック（不正解）
+        async function handleJudgeWrong() {
             if (!currentRoomId || !roomState || roomState.status !== 'playing') return;
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
             await updateDoc(roomRef, {
@@ -2899,7 +2901,13 @@
                 wrongCountEvent: (roomState.wrongCountEvent || 0) + 1,
                 clearVersion: (roomState.clearVersion || 1) + 1
             });
-        });
+        }
+
+        document.getElementById('btn-judge-correct').addEventListener('click', handleJudgeCorrect);
+        document.getElementById('btn-fs-correct').addEventListener('click', handleJudgeCorrect);
+
+        document.getElementById('btn-judge-wrong').addEventListener('click', handleJudgeWrong);
+        document.getElementById('btn-fs-wrong').addEventListener('click', handleJudgeWrong);
 
         function triggerBotAutoDrawIfNeeded(turnIdx, order, participants) {
             if (!order || order.length === 0) return;
@@ -2937,7 +2945,7 @@
             document.getElementById('fullscreen-board-modal').classList.remove('red-alert-screen');
             document.getElementById('fs-timeup-overlay').classList.remove('hidden');
             playGameEventSound('timeup');
-            triggerCutin('⏰ TIME UP!!', 'bg-purple-600 border-red-400 text-white');
+            triggerCutin('⏰ GAME OVER', 'bg-purple-600 border-red-400 text-white');
         }
 
         function getTimerColorStyle(rem, totalLimit) {
@@ -2946,6 +2954,16 @@
             }
             if (rem <= 30) {
                 return { textCls: 'text-yellow-500', iconCls: 'text-yellow-500', borderCls: 'border-yellow-400', bgCls: 'bg-yellow-50' };
+            }
+
+            const activeRange = totalLimit - 30;
+            if (activeRange > 0) {
+                const halfBoundary = 30 + (activeRange / 2);
+                if (rem > halfBoundary) {
+                    return { textCls: 'text-blue-500', iconCls: 'text-blue-500', borderCls: 'border-blue-500', bgCls: 'bg-white' };
+                } else {
+                    return { textCls: 'text-green-600', iconCls: 'text-green-500', borderCls: 'border-green-400', bgCls: 'bg-green-50' };
+                }
             }
             return { textCls: 'text-blue-500', iconCls: 'text-blue-500', borderCls: 'border-blue-500', bgCls: 'bg-white' };
         }
@@ -3276,8 +3294,8 @@
                             <span class="text-[9px] font-bold text-slate-400 mr-auto">個人pt:</span>
                             <button type="button" data-user-uid="${uid}" data-delta="-10" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-blue-500 text-blue-600 hover:text-white border border-blue-300 rounded text-[9px] font-black">-10</button>
                             <button type="button" data-user-uid="${uid}" data-delta="-1" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-blue-500 text-blue-600 hover:text-white border border-blue-300 rounded text-[9px] font-black">-1</button>
-                            <button type="button" data-user-uid="${uid}" data-delta="1" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-red-500 text-red-600 hover:text-white border border-blue-300 rounded text-[9px] font-black">+1</button>
-                            <button type="button" data-user-uid="${uid}" data-delta="10" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-red-500 text-red-600 hover:text-white border border-blue-300 rounded text-[9px] font-black">+10</button>
+                            <button type="button" data-user-uid="${uid}" data-delta="1" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-red-500 text-red-600 hover:text-white border border-red-300 rounded text-[9px] font-black">+1</button>
+                            <button type="button" data-user-uid="${uid}" data-delta="10" class="user-pt-btn px-1.5 py-0.5 bg-white hover:bg-red-500 text-red-600 hover:text-white border border-red-300 rounded text-[9px] font-black">+10</button>
                         </div>
                     ` : '';
 
