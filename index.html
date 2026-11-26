@@ -81,6 +81,7 @@
         canvas.relay-canvas {
             touch-action: none;
             background-color: #1f48ff;
+            transition: background-color 0.2s ease;
         }
         /* アニメーション */
         @keyframes shakeWrong {
@@ -100,28 +101,30 @@
             animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         @keyframes cutinSlide {
-            0% { transform: scale(2.1) rotate(-5deg); opacity: 0; }
-            20% { transform: scale(1) rotate(0deg); opacity: 1; }
-            80% { transform: scale(1.03) rotate(0deg); opacity: 1; }
-            100% { transform: scale(0.92); opacity: 0; }
+            0% { transform: translateY(24px) scale(1.35); opacity: 0; }
+            20% { transform: translateY(0) scale(1); opacity: 1; }
+            82% { transform: translateY(0) scale(1.02); opacity: 1; }
+            100% { transform: translateY(12px) scale(0.95); opacity: 0; }
         }
         .animate-cutin {
-            animation: cutinSlide 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        }
-        @keyframes redAlertPulse {
-            0%, 100% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
-            50% { box-shadow: inset 0 0 36px rgba(239, 68, 68, 0.45); }
-        }
-        .red-alert-screen {
-            animation: redAlertPulse 0.75s infinite;
+            animation: cutinSlide 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        /* 全画面表示レイアウト（スマホ横画面・PC共通で右側にボタン＆制限時間メーター配置） */
+        /* 全画面表示レイアウト：左にコンパクトな全消し・完了ボタン、中央に大きな16:9パネル、右に縦長の制限時間メーター */
         #fs-main-container {
+            display: flex;
             flex-direction: row;
             align-items: stretch;
-            justify-content: center;
-            gap: 0.5rem;
+            justify-content: space-between;
+            gap: 0.45rem;
+        }
+        #fs-left-sidebar {
+            width: 82px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
         }
         #fs-canvas-wrapper {
             flex: 1 1 auto;
@@ -132,20 +135,21 @@
             justify-content: center;
         }
         #fs-right-sidebar {
-            width: 118px;
+            width: 78px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            gap: 0.4rem;
+            justify-content: stretch;
         }
         @media (min-width: 768px) {
             #fs-main-container {
-                gap: 1.25rem;
+                gap: 1rem;
+            }
+            #fs-left-sidebar {
+                width: 140px;
             }
             #fs-right-sidebar {
-                width: 175px;
-                gap: 0.75rem;
+                width: 130px;
             }
         }
         /* スマホ縦向き時のみ上下分割にフォールバック */
@@ -153,15 +157,18 @@
             #fs-main-container {
                 flex-direction: column;
             }
-            #fs-right-sidebar {
+            #fs-left-sidebar {
                 width: 100%;
                 flex-direction: row;
-                align-items: stretch;
+            }
+            #fs-right-sidebar {
+                width: 100%;
                 height: auto;
             }
             #fs-meter-blocks {
                 flex-direction: row !important;
                 height: 22px !important;
+                min-height: 22px !important;
             }
         }
 
@@ -186,8 +193,8 @@
     <!-- トースト通知 -->
     <div id="toast-container" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[120] flex flex-col gap-2 pointer-events-none w-11/12 max-w-md"></div>
 
-    <!-- ゲームカットイン演出オーバーレイ -->
-    <div id="cutin-layer" class="fixed inset-0 pointer-events-none z-[115] flex items-center justify-center"></div>
+    <!-- ゲームカットイン演出オーバーレイ（画面下部に表示） -->
+    <div id="cutin-layer" class="fixed inset-x-0 bottom-4 sm:bottom-8 pointer-events-none z-[115] flex items-end justify-center px-3"></div>
 
     <!-- カスタム確認モーダル -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[120] hidden items-center justify-center p-4">
@@ -221,105 +228,106 @@
     </div>
 
     <!-- ==================== 手書きパネル全画面表示オーバーレイ ==================== -->
-    <div id="fullscreen-board-modal" class="fixed inset-0 h-[100dvh] bg-white z-[70] hidden flex-col justify-between p-1.5 sm:p-3 select-none transition-shadow overflow-hidden">
-        <!-- 全画面トップHUD（制限時間表示を外した分、〇番手〇〇の表示領域を拡大） -->
-        <div id="fs-top-hud" class="rainbow-border-panel rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center justify-between gap-2 shrink-0">
-            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-                <span id="fs-role-tag" class="bg-cyan-500 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg whitespace-nowrap shrink-0">
+    <div id="fullscreen-board-modal" class="fixed inset-0 h-[100dvh] bg-white z-[70] hidden flex-col justify-between p-1 sm:p-2.5 select-none overflow-hidden">
+        <!-- 全画面トップHUD（スマホでもスリムでPC風のスマートな表示） -->
+        <div id="fs-top-hud" class="rainbow-border-panel rounded-xl px-2 py-0.5 sm:px-3.5 sm:py-1.5 flex items-center justify-between gap-1.5 shrink-0">
+            <div class="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
+                <span id="fs-role-tag" class="bg-cyan-500 text-white text-[9px] sm:text-xs font-black px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-md whitespace-nowrap shrink-0">
                     解答中
                 </span>
-                <span id="fs-drawer-name" class="font-black text-slate-800 text-sm sm:text-xl truncate">
+                <span id="fs-drawer-name" class="font-black text-slate-800 text-xs sm:text-lg truncate">
                     プレイヤー名
                 </span>
             </div>
 
-            <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-                <div class="bg-slate-50 border-2 border-green-400 px-2 py-0.5 sm:px-3 sm:py-1 rounded-xl flex items-center">
+            <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+                <div class="bg-slate-50 border border-green-400 sm:border-2 px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-lg flex items-center">
                     <div class="text-left">
-                        <div id="fs-quota-text" class="text-[10px] sm:text-xs font-black text-green-600 leading-tight whitespace-nowrap">
-                            クリアまであと 5 問！ (0/5)
+                        <div id="fs-quota-text" class="text-[9px] sm:text-xs font-black text-green-600 leading-none whitespace-nowrap">
+                            あと 5 問！ (0/5)
                         </div>
-                        <div class="w-16 sm:w-28 h-1.5 bg-slate-200 rounded-full overflow-hidden mt-0.5">
+                        <div class="w-14 sm:w-24 h-1 bg-slate-200 rounded-full overflow-hidden mt-0.5">
                             <div id="fs-quota-bar" class="h-full rainbow-gradient-bar transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
-                <button id="btn-fs-view-image" class="relative px-2 py-1.5 sm:px-3 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-xl text-[11px] sm:text-sm game-btn flex items-center gap-1 whitespace-nowrap">
+                <button id="btn-fs-view-image" class="relative px-1.5 py-1 sm:px-2.5 sm:py-1.5 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn flex items-center gap-1 whitespace-nowrap">
                     <i class="fa-regular fa-image"></i>
                     <span class="hidden sm:inline">問題画像</span>
-                    <span id="fs-image-new-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full animate-bounce">NEW</span>
+                    <span id="fs-image-new-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] font-black px-1 py-0.5 rounded-full animate-bounce">NEW</span>
                 </button>
-                <button id="btn-exit-fullscreen" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-blue-400 font-black rounded-xl text-[11px] sm:text-sm game-btn flex items-center gap-1 whitespace-nowrap">
+                <button id="btn-exit-fullscreen" class="px-1.5 py-1 sm:px-2.5 sm:py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-blue-400 sm:border-2 font-black rounded-lg text-[10px] sm:text-xs game-btn flex items-center gap-1 whitespace-nowrap">
                     <i class="fa-solid fa-compress text-blue-500"></i>
                     <span>通常表示</span>
                 </button>
             </div>
         </div>
 
-        <!-- 全画面問題文ティッカー -->
-        <div id="fs-question-bar" class="bg-blue-50 border-2 border-blue-300 rounded-xl px-2.5 py-1 my-1 text-center truncate shrink-0">
-            <span class="text-[10px] font-black bg-blue-500 text-white px-1.5 py-0.5 rounded mr-1">Q</span>
-            <span id="fs-question-ticker" class="text-xs sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
+        <!-- 全画面問題文ティッカー（スリム化） -->
+        <div id="fs-question-bar" class="bg-blue-50 border border-blue-300 sm:border-2 rounded-lg px-2 py-0.5 my-0.5 sm:my-1 text-center truncate shrink-0">
+            <span class="text-[9px] sm:text-[10px] font-black bg-blue-500 text-white px-1.5 py-0.2 rounded mr-1">Q</span>
+            <span id="fs-question-ticker" class="text-[11px] sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
         </div>
 
-        <!-- 全画面メインエリア（左：16:9大画面キャンバス ／ 右：右上操作ボタン＋右下制限時間メーター） -->
-        <div id="fs-main-container" class="relative flex-1 min-h-0 w-full flex overflow-hidden">
-            <!-- キャンバス本体（16:9比率を維持したまま最大限拡大） -->
+        <!-- 全画面メインエリア（左：小さめの全消し・解答完了ボタン ／ 中央：最大化16:9パネル ／ 右：上方向に最大化制限時間メーター） -->
+        <div id="fs-main-container" class="relative flex-1 min-h-0 w-full overflow-hidden">
+            <!-- 左サイドバー：左上にコンパクトな操作ボタン -->
+            <div id="fs-left-sidebar" class="min-h-0">
+                <!-- 左上：解答者用ツールバー（小さめの全消し・解答完了ボタン） -->
+                <div id="fs-drawer-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-xl p-1 sm:p-2 flex flex-row sm:flex-col gap-1 sm:gap-1.5">
+                    <button id="btn-fs-clear" class="flex-1 sm:w-full py-1 sm:py-2 px-1.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center justify-center gap-0.5">
+                        <i class="fa-solid fa-trash-can"></i><span>全消し</span>
+                    </button>
+                    <button id="btn-fs-submit" class="flex-1 sm:w-full py-1 sm:py-2 px-1.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center justify-center gap-0.5">
+                        <i class="fa-solid fa-bell"></i><span>解答完了</span>
+                    </button>
+                </div>
+
+                <!-- 左上：司会者用ツールバー（正解・不正解判定ボタン） -->
+                <div id="fs-host-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-xl p-1 sm:p-2 flex flex-row sm:flex-col gap-1 sm:gap-1.5">
+                    <button id="btn-fs-correct" class="flex-1 sm:w-full py-1 sm:py-2 px-1.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center justify-center gap-0.5">
+                        <span>⭕</span><span>正解</span>
+                    </button>
+                    <button id="btn-fs-wrong" class="flex-1 sm:w-full py-1 sm:py-2 px-1.5 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center justify-center gap-0.5">
+                        <span>❌</span><span>不正解</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 中央キャンバス本体（16:9比率を維持したまま最大限拡大） -->
             <div id="fs-canvas-wrapper" class="relative overflow-hidden">
-                <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full w-auto h-full rounded-2xl overflow-hidden border-4 border-cyan-500 bg-[#1f48ff] shadow-xl flex items-center justify-center">
+                <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full w-auto h-full rounded-xl sm:rounded-2xl overflow-hidden border-[3px] sm:border-4 border-cyan-500 bg-[#1f48ff] shadow-xl flex items-center justify-center transition-colors duration-200">
                     <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
 
-                    <div id="fs-spectating-badge" class="hidden absolute top-2.5 left-2.5 bg-white/95 text-blue-600 border-2 border-blue-400 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
+                    <div id="fs-spectating-badge" class="hidden absolute top-2 left-2 bg-white/95 text-blue-600 border-2 border-blue-400 text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full pointer-events-none flex items-center gap-1 shadow">
                         <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
                     </div>
 
-                    <div id="fs-submitted-overlay" class="hidden absolute inset-0 bg-slate-900/35 backdrop-blur-[1px] flex flex-col items-center justify-end p-3 pb-4 text-center z-10 pointer-events-none">
-                        <div class="bg-white/95 border-4 border-orange-400 px-5 py-2 rounded-2xl shadow-2xl animate-pop pointer-events-auto">
-                            <div class="text-orange-500 font-black text-sm sm:text-lg mb-0.5">
-                                <i class="fa-solid fa-gavel fa-bounce mr-1.5"></i>解答完了！司会者判定中...
+                    <div id="fs-submitted-overlay" class="hidden absolute inset-0 bg-slate-900/35 backdrop-blur-[1px] flex flex-col items-center justify-end p-2 pb-3 text-center z-10 pointer-events-none">
+                        <div class="bg-white/95 border-2 sm:border-4 border-orange-400 px-4 py-1.5 rounded-xl shadow-2xl animate-pop pointer-events-auto">
+                            <div class="text-orange-500 font-black text-xs sm:text-base">
+                                <i class="fa-solid fa-gavel fa-bounce mr-1"></i>解答完了！司会者判定中...
                             </div>
-                            <p class="text-[10px] sm:text-xs text-slate-600 font-bold">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
                         </div>
                     </div>
 
                     <div id="fs-timeup-overlay" class="hidden absolute inset-0 bg-purple-900/75 backdrop-blur-xs flex items-center justify-center p-4 z-20">
-                        <div class="bg-white border-4 border-red-500 px-6 py-5 rounded-3xl text-center shadow-2xl animate-pop">
-                            <div class="text-4xl sm:text-5xl mb-1">⏰💦</div>
-                            <div class="text-red-500 font-black text-2xl sm:text-4xl tracking-wider">GAME OVER</div>
+                        <div class="bg-white border-4 border-red-500 px-6 py-4 rounded-3xl text-center shadow-2xl animate-pop">
+                            <div class="text-3xl sm:text-5xl mb-1">⏰💦</div>
+                            <div class="text-red-500 font-black text-xl sm:text-4xl tracking-wider">GAME OVER</div>
                             <p class="text-xs sm:text-sm font-extrabold text-slate-600 mt-1">制限時間終了！</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 全画面右サイドバー（右上：全消し・解答完了ボタン ／ 下側：制限時間メーター） -->
+            <!-- 右サイドバー：上方向いっぱいに広げた制限時間メーター -->
             <div id="fs-right-sidebar" class="min-h-0">
-                <!-- 右上：解答者用ツールバー（全消し・解答完了） -->
-                <div id="fs-drawer-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-1.5 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2">
-                    <button id="btn-fs-clear" class="w-full py-2 sm:py-2.5 px-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
-                        <i class="fa-solid fa-trash-can mr-1"></i>全消し
-                    </button>
-                    <button id="btn-fs-submit" class="w-full py-2 sm:py-2.5 px-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
-                        <i class="fa-solid fa-bell mr-1"></i>解答完了！
-                    </button>
-                </div>
-
-                <!-- 右上：司会者用ツールバー（正解・不正解判定ボタン） -->
-                <div id="fs-host-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-1.5 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2">
-                    <button id="btn-fs-correct" class="w-full py-2 sm:py-2.5 px-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap flex items-center justify-center gap-1">
-                        <span>⭕</span><span>正解！</span>
-                    </button>
-                    <button id="btn-fs-wrong" class="w-full py-2 sm:py-2.5 px-2 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap flex items-center justify-center gap-1">
-                        <span>❌</span><span>不正解</span>
-                    </button>
-                </div>
-
-                <!-- 右下空きスペース：制限時間メーター（10段階グラデーションブロック＋従来の制限時間表示を一体化） -->
-                <div id="fs-time-meter-wrapper" class="flex-1 min-h-0 flex flex-col justify-end">
-                    <div class="w-full h-full max-h-[360px] flex flex-col">
-                        <!-- 上から下へ 青→緑→黄→オレンジ→赤 の10個ブロック -->
-                        <div id="fs-meter-blocks" class="flex-1 min-h-[70px] w-full flex flex-col gap-1 p-1.5 bg-slate-900/90 border-2 border-b-0 border-slate-700 rounded-t-2xl shadow-inner">
+                <div id="fs-time-meter-wrapper" class="flex-1 h-full min-h-0 flex flex-col justify-stretch">
+                    <div class="w-full h-full flex flex-col">
+                        <!-- 上から下へ 青→緑→黄→オレンジ→赤 の10個ブロック（上方向いっぱいに伸縮） -->
+                        <div id="fs-meter-blocks" class="flex-1 min-h-0 w-full flex flex-col gap-0.5 sm:gap-1 p-1 sm:p-1.5 bg-slate-900/90 border-2 border-b-0 border-slate-700 rounded-t-xl sm:rounded-t-2xl shadow-inner">
                             <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="0" style="background-color:#2563eb; box-shadow:0 0 8px #2563eb;"></div>
                             <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="1" style="background-color:#0284c7; box-shadow:0 0 8px #0284c7;"></div>
                             <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="2" style="background-color:#059669; box-shadow:0 0 8px #059669;"></div>
@@ -331,11 +339,11 @@
                             <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="8" style="background-color:#ea580c; box-shadow:0 0 8px #ea580c;"></div>
                             <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="9" style="background-color:#ef4444; box-shadow:0 0 8px #ef4444;"></div>
                         </div>
-                        <!-- ブロックの真下にくっつく従来の制限時間表示 -->
-                        <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-2 py-1.5 sm:px-3 sm:py-2 rounded-b-2xl rounded-t-none flex items-center justify-center gap-1 shadow-md transition-colors duration-200 shrink-0">
-                            <i id="fs-timer-icon" class="fa-solid fa-stopwatch text-blue-500 text-xs sm:text-sm"></i>
-                            <span id="fs-timer-val" class="font-led font-black text-xl sm:text-3xl text-blue-500 tabular-nums leading-none">--</span>
-                            <span class="text-[9px] sm:text-[10px] font-black text-slate-500">SEC</span>
+                        <!-- ブロックの真下にくっつく制限時間表示 -->
+                        <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-1 py-1 sm:px-2 sm:py-1.5 rounded-b-xl sm:rounded-b-2xl rounded-t-none flex items-center justify-center gap-0.5 sm:gap-1 shadow-md transition-colors duration-200 shrink-0">
+                            <i id="fs-timer-icon" class="fa-solid fa-stopwatch text-blue-500 text-[10px] sm:text-sm"></i>
+                            <span id="fs-timer-val" class="font-led font-black text-base sm:text-2xl text-blue-500 tabular-nums leading-none">--</span>
+                            <span class="text-[8px] sm:text-[10px] font-black text-slate-500">SEC</span>
                         </div>
                     </div>
                 </div>
@@ -699,7 +707,7 @@
                         </div>
                     </div>
 
-                    <div id="canvas-frame" class="canvas-container-box relative w-full max-w-2xl mx-auto aspect-[16/9] max-h-[55vh] rounded-2xl overflow-hidden border-4 border-blue-500 bg-[#1f48ff] shadow-lg flex items-center justify-center">
+                    <div id="canvas-frame" class="canvas-container-box relative w-full max-w-2xl mx-auto aspect-[16/9] max-h-[55vh] rounded-2xl overflow-hidden border-4 border-blue-500 bg-[#1f48ff] shadow-lg flex items-center justify-center transition-colors duration-200">
                         <canvas id="relay-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
 
                         <div id="canvas-readonly-badge" class="hidden absolute top-2.5 left-2.5 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
@@ -742,11 +750,11 @@
                     </div>
                 </div>
 
-                <!-- 【3】正解済みフリップ一覧ギャラリー -->
+                <!-- 【3】正解済み解答パネル一覧ギャラリー -->
                 <div class="white-arcade-card rounded-2xl p-4 border-2 border-green-400">
                     <div class="flex items-center justify-between mb-3 pb-2 border-b-2 border-slate-100">
                         <h3 class="font-black text-green-600 text-sm sm:text-base flex items-center gap-2">
-                            <i class="fa-solid fa-layer-group"></i> 正解済み解答フリップ一覧
+                            <i class="fa-solid fa-layer-group"></i> 正解済み解答パネル一覧
                         </h3>
                         <span class="text-xs font-bold text-slate-500">重複解答に注意！</span>
                     </div>
@@ -1647,13 +1655,13 @@
         function triggerCutin(text, colorClass) {
             const layer = document.getElementById('cutin-layer');
             layer.innerHTML = `
-                <div class="px-8 py-4 rounded-3xl border-4 ${colorClass} font-black text-4xl sm:text-6xl tracking-wider shadow-2xl animate-cutin">
+                <div class="px-6 py-2.5 sm:px-8 sm:py-3 rounded-2xl border-4 ${colorClass} font-black text-2xl sm:text-4xl tracking-wider shadow-2xl animate-cutin">
                     ${escapeHtml(text)}
                 </div>
             `;
             setTimeout(() => {
                 layer.innerHTML = '';
-            }, 1250);
+            }, 1200);
         }
 
         function showToast(msg, type = 'info') {
@@ -1765,6 +1773,7 @@
                     endTime: 0,
                     turnIndex: 0,
                     submittedFlag: false,
+                    panelHighlightRed: false,
                     clearVersion: 1,
                     submitCountEvent: 0,
                     correctCountEvent: 0,
@@ -1958,6 +1967,7 @@
 
         function onRoomUpdated(data) {
             const prevStatus = roomState ? roomState.status : null;
+            const prevHighlightRed = roomState ? Boolean(roomState.panelHighlightRed) : false;
             roomState = data;
 
             if (currentRoomId) {
@@ -1972,7 +1982,9 @@
 
             if (data.clearVersion && data.clearVersion !== lastClearVer) {
                 lastClearVer = data.clearVersion;
-                clearBothCanvasesLocal();
+                clearBothCanvasesLocal(Boolean(data.panelHighlightRed));
+            } else if (Boolean(data.panelHighlightRed) !== prevHighlightRed) {
+                setPanelBackgroundRedState(Boolean(data.panelHighlightRed));
             }
 
             if (data.submitCountEvent && data.submitCountEvent !== lastSubmitEvent) {
@@ -1991,7 +2003,7 @@
             if (data.wrongCountEvent && data.wrongCountEvent !== lastWrongEvent) {
                 lastWrongEvent = data.wrongCountEvent;
                 playGameEventSound('wrong');
-                triggerCutin('❌ MISS... 書き直し！', 'bg-blue-500 border-cyan-300 text-white');
+                triggerCutin('MISS', 'bg-blue-500 border-cyan-300 text-white');
                 const frame = document.getElementById('canvas-frame');
                 frame.classList.remove('animate-shake');
                 void frame.offsetWidth;
@@ -2005,7 +2017,6 @@
                     startQuizBgm();
                 } else {
                     stopQuizBgm();
-                    document.getElementById('app-body').classList.remove('red-alert-screen');
                     if (data.status === 'cleared') {
                         playGameEventSound('clear');
                         triggerCutin('🏆 STAGE CLEAR!!', 'rainbow-gradient-bar border-white text-white');
@@ -2070,7 +2081,7 @@
             document.getElementById('disp-progress-bar').style.width = `${pct}%`;
 
             document.getElementById('fs-quota-text').textContent =
-                remainingQuota > 0 ? `クリアまであと ${remainingQuota} 問！ (${clearedCount}/${target})` : `STAGE CLEAR! (${clearedCount}/${target})`;
+                remainingQuota > 0 ? `あと ${remainingQuota} 問！ (${clearedCount}/${target})` : `STAGE CLEAR! (${clearedCount}/${target})`;
             document.getElementById('fs-quota-bar').style.width = `${pct}%`;
 
             const images = data.problemImages || [];
@@ -2160,12 +2171,12 @@
                     turnBadgeEl.textContent = '✍️ あなたのターン！手書きで解答してください';
                     turnBadgeEl.className = 'hidden sm:inline-block text-xs font-black text-white bg-red-500 px-3 py-1 rounded-full animate-bounce';
                     fsRoleTag.textContent = '✍️ あなたのターン！';
-                    fsRoleTag.className = 'bg-red-500 text-white text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-lg whitespace-nowrap animate-pulse';
+                    fsRoleTag.className = 'bg-red-500 text-white text-[9px] sm:text-xs font-black px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-md whitespace-nowrap animate-pulse';
                 } else {
                     turnBadgeEl.textContent = activePlayer.isBot ? '🤖 ダミーが自動記入中...' : '👀 解答者が記入中...';
                     turnBadgeEl.className = 'hidden sm:inline-block text-xs font-black text-blue-600 bg-white border-2 border-blue-400 px-3 py-1 rounded-full';
                     fsRoleTag.textContent = '👀 解答中';
-                    fsRoleTag.className = 'bg-cyan-500 text-white text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-lg whitespace-nowrap';
+                    fsRoleTag.className = 'bg-cyan-500 text-white text-[9px] sm:text-xs font-black px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-md whitespace-nowrap';
                 }
             } else {
                 const firstName = activeOrder.length > 0 ? (data.participants?.[activeOrder[0]]?.name || '---') : '出場解答者未選択';
@@ -2174,19 +2185,19 @@
                 turnBadgeEl.textContent = data.status === 'waiting' ? '開始待機中' : 'ラウンド終了';
                 turnBadgeEl.className = 'hidden sm:inline-block text-xs font-extrabold text-slate-600 bg-white border border-slate-300 px-3 py-1 rounded-full';
                 fsRoleTag.textContent = '待機中';
-                fsRoleTag.className = 'bg-slate-200 text-slate-700 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-lg whitespace-nowrap';
+                fsRoleTag.className = 'bg-slate-200 text-slate-700 text-[9px] sm:text-xs font-black px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-md whitespace-nowrap';
             }
 
-            const canDraw = isMyTurn && !data.submittedFlag;
+            const canDraw = isMyTurn && !data.submittedFlag && !data.panelHighlightRed;
             document.getElementById('answerer-controls').classList.toggle('hidden', !canDraw);
             document.getElementById('canvas-readonly-badge').classList.toggle('hidden', canDraw || data.status !== 'playing');
-            document.getElementById('submitted-waiting-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag));
+            document.getElementById('submitted-waiting-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag && !data.panelHighlightRed));
 
             document.getElementById('fs-drawer-toolbar').classList.toggle('hidden', !canDraw);
-            document.getElementById('fs-host-toolbar').classList.toggle('hidden', !isHostPlaying);
+            document.getElementById('fs-host-toolbar').classList.toggle('hidden', !isHostPlaying || Boolean(data.panelHighlightRed));
 
             document.getElementById('fs-spectating-badge').classList.toggle('hidden', canDraw || isHostPlaying || data.status !== 'playing');
-            document.getElementById('fs-submitted-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag));
+            document.getElementById('fs-submitted-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag && !data.panelHighlightRed));
             document.getElementById('fs-timeup-overlay').classList.toggle('hidden', data.status !== 'gameover');
 
             renderTeamsSection(data);
@@ -2791,6 +2802,7 @@
                 clearedFlips: nextClearedFlips,
                 status: 'cleared',
                 submittedFlag: false,
+                panelHighlightRed: false,
                 participants: updatedParticipants,
                 correctCountEvent: (data.correctCountEvent || 0) + 1,
                 clearVersion: (data.clearVersion || 1) + 1
@@ -2828,6 +2840,7 @@
                 endTime: Date.now() + timeLimit * 1000,
                 turnIndex: 0,
                 submittedFlag: false,
+                panelHighlightRed: false,
                 clearedFlips: [],
                 clearVersion: (roomState.clearVersion || 1) + 1
             });
@@ -2849,7 +2862,8 @@
             await updateDoc(roomRef, {
                 status: 'gameover',
                 endTime: Date.now(),
-                submittedFlag: false
+                submittedFlag: false,
+                panelHighlightRed: false
             });
             showToast("強制ゲームオーバーを実行しました", "warning");
         });
@@ -2862,57 +2876,105 @@
                 endTime: 0,
                 turnIndex: 0,
                 submittedFlag: false,
+                panelHighlightRed: false,
                 clearedFlips: [],
                 clearVersion: (roomState.clearVersion || 1) + 1
             });
             showToast("待機状態にリセットしました", "info");
         });
 
+        let isJudgingCorrectLock = false;
+
         async function handleJudgeCorrect() {
-            if (!currentRoomId || !roomState || roomState.status !== 'playing') return;
+            if (isJudgingCorrectLock) return;
+            if (!currentRoomId || !roomState || roomState.status !== 'playing' || roomState.panelHighlightRed) return;
             const activeOrder = getEffectiveRelayOrder(roomState);
             if (activeOrder.length === 0) return;
 
-            const activeUid = activeOrder[roomState.turnIndex % activeOrder.length];
-            const activePlayer = roomState.participants?.[activeUid];
-            const snapshotDataUrl = liveCanvas.toDataURL('image/jpeg', 0.65);
+            isJudgingCorrectLock = true;
+            try {
+                const activeUid = activeOrder[roomState.turnIndex % activeOrder.length];
+                const activePlayer = roomState.participants?.[activeUid];
 
-            const nextCleared = [
-                ...(roomState.clearedFlips || []),
-                {
-                    num: (roomState.clearedFlips || []).length + 1,
-                    uid: activeUid,
-                    name: activePlayer?.name || '解答者',
-                    imageData: snapshotDataUrl
-                }
-            ];
+                // まず正解した解答パネルを赤色（#ef4444）に変えてスナップショットを作成・1秒間表示する
+                setPanelBackgroundRedState(true);
+                const redSnapshotDataUrl = liveCanvas.toDataURL('image/jpeg', 0.65);
 
-            const target = roomState.targetCount || 5;
-            const isAllCleared = nextCleared.length >= target;
-            const nextTurnIdx = roomState.turnIndex + 1;
-            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+                const nextCleared = [
+                    ...(roomState.clearedFlips || []),
+                    {
+                        num: (roomState.clearedFlips || []).length + 1,
+                        uid: activeUid,
+                        name: activePlayer?.name || '解答者',
+                        imageData: redSnapshotDataUrl
+                    }
+                ];
 
-            if (isAllCleared) {
-                const clearUpdates = await buildClearUpdates(roomState, nextCleared);
-                await updateDoc(roomRef, clearUpdates);
-            } else {
+                const target = roomState.targetCount || 5;
+                const isAllCleared = nextCleared.length >= target;
+                const nextTurnIdx = roomState.turnIndex + 1;
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+
+                // 全員に「赤色パネル＋正解演出」を1秒間共有表示
                 await updateDoc(roomRef, {
                     clearedFlips: nextCleared,
-                    status: 'playing',
-                    turnIndex: nextTurnIdx,
+                    panelHighlightRed: true,
                     submittedFlag: false,
-                    correctCountEvent: (roomState.correctCountEvent || 0) + 1,
-                    clearVersion: (roomState.clearVersion || 1) + 1
+                    correctCountEvent: (roomState.correctCountEvent || 0) + 1
                 });
-                triggerBotAutoDrawIfNeeded(nextTurnIdx, activeOrder, roomState.participants);
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                if (!roomState || roomState.status !== 'playing') return;
+
+                if (isAllCleared) {
+                    const pPts = typeof roomState.problemPoints === 'number' ? roomState.problemPoints : 100;
+                    const updatedParticipants = { ...(roomState.participants || {}) };
+                    activeOrder.forEach(uid => {
+                        if (updatedParticipants[uid]) {
+                            updatedParticipants[uid] = {
+                                ...updatedParticipants[uid],
+                                score: (updatedParticipants[uid].score || 0) + pPts
+                            };
+                        }
+                    });
+
+                    const clearUpdates = {
+                        clearedFlips: nextCleared,
+                        status: 'cleared',
+                        submittedFlag: false,
+                        panelHighlightRed: false,
+                        participants: updatedParticipants,
+                        clearVersion: (roomState.clearVersion || 1) + 1
+                    };
+
+                    const cTeamId = roomState.challengerTeamId || 'ALL';
+                    if (cTeamId !== 'ALL' && roomState.teams?.[cTeamId]) {
+                        clearUpdates[`teams.${cTeamId}.points`] = (roomState.teams[cTeamId].points || 0) + pPts;
+                    }
+
+                    await updateDoc(roomRef, clearUpdates);
+                } else {
+                    await updateDoc(roomRef, {
+                        status: 'playing',
+                        turnIndex: nextTurnIdx,
+                        submittedFlag: false,
+                        panelHighlightRed: false,
+                        clearVersion: (roomState.clearVersion || 1) + 1
+                    });
+                    triggerBotAutoDrawIfNeeded(nextTurnIdx, activeOrder, roomState.participants);
+                }
+            } finally {
+                isJudgingCorrectLock = false;
             }
         }
 
         async function handleJudgeWrong() {
-            if (!currentRoomId || !roomState || roomState.status !== 'playing') return;
+            if (!currentRoomId || !roomState || roomState.status !== 'playing' || roomState.panelHighlightRed) return;
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
             await updateDoc(roomRef, {
                 submittedFlag: false,
+                panelHighlightRed: false,
                 wrongCountEvent: (roomState.wrongCountEvent || 0) + 1,
                 clearVersion: (roomState.clearVersion || 1) + 1
             });
@@ -2956,8 +3018,6 @@
             if (hasTriggeredLocalTimeup) return;
             hasTriggeredLocalTimeup = true;
             stopQuizBgm();
-            document.getElementById('app-body').classList.remove('red-alert-screen');
-            document.getElementById('fullscreen-board-modal').classList.remove('red-alert-screen');
             document.getElementById('fs-timeup-overlay').classList.remove('hidden');
             playGameEventSound('timeup');
             triggerCutin('⏰ GAME OVER', 'bg-purple-600 border-red-400 text-white');
@@ -3031,9 +3091,9 @@
             iconEl.className = `fa-solid fa-stopwatch ${style.iconCls} transition-colors duration-200`;
             boxEl.className = `flex items-center gap-2 ${style.bgCls} border-2 ${style.borderCls} px-3.5 py-1 rounded-xl shadow-sm transition-colors duration-200`;
 
-            fsTimerEl.className = `font-led font-black text-xl sm:text-3xl ${style.textCls} tabular-nums leading-none transition-colors duration-200`;
-            fsIconEl.className = `fa-solid fa-stopwatch ${style.iconCls} text-xs sm:text-sm transition-colors duration-200`;
-            fsBoxEl.className = `${style.bgCls} border-2 ${style.borderCls} px-2 py-1.5 sm:px-3 sm:py-2 rounded-b-2xl rounded-t-none flex items-center justify-center gap-1 shadow-md transition-colors duration-200 shrink-0`;
+            fsTimerEl.className = `font-led font-black text-base sm:text-2xl ${style.textCls} tabular-nums leading-none transition-colors duration-200`;
+            fsIconEl.className = `fa-solid fa-stopwatch ${style.iconCls} text-[10px] sm:text-sm transition-colors duration-200`;
+            fsBoxEl.className = `${style.bgCls} border-2 ${style.borderCls} px-1 py-1 sm:px-2 sm:py-1.5 rounded-b-xl sm:rounded-b-2xl rounded-t-none flex items-center justify-center gap-0.5 sm:gap-1 shadow-md transition-colors duration-200 shrink-0`;
 
             updateTimeMeterBlocks(rem, totalLimit);
         }
@@ -3042,8 +3102,6 @@
             if (!roomState) return;
             const timerEl = document.getElementById('disp-timer');
             const fsTimerEl = document.getElementById('fs-timer-val');
-            const bodyEl = document.getElementById('app-body');
-            const fsModalEl = document.getElementById('fullscreen-board-modal');
             const totalLimit = roomState.timeLimit || 60;
 
             if (roomState.status === 'playing') {
@@ -3053,15 +3111,10 @@
                 applyTimerAppearance(rem, totalLimit);
 
                 if (rem <= 10 && rem > 0) {
-                    bodyEl.classList.add('red-alert-screen');
-                    fsModalEl.classList.add('red-alert-screen');
                     if (rem !== lastBeep) {
                         lastBeep = rem;
                         playGameEventSound('tick');
                     }
-                } else {
-                    bodyEl.classList.remove('red-alert-screen');
-                    fsModalEl.classList.remove('red-alert-screen');
                 }
 
                 if (rem === 0) {
@@ -3077,14 +3130,12 @@
                 timerEl.textContent = roomState.timeLimit ? defVal : '--';
                 fsTimerEl.textContent = roomState.timeLimit ? defVal : '--';
                 applyTimerAppearance(defVal, totalLimit);
-                bodyEl.classList.remove('red-alert-screen');
-                fsModalEl.classList.remove('red-alert-screen');
                 lastBeep = -1;
             }
         }
 
         // ==========================================
-        // 10. 手書きキャンバス（背景 #1f48ff / 白ペン固定）
+        // 10. 手書きキャンバス（通常背景 #1f48ff / 正解時赤背景 #ef4444 / 白ペン固定）
         // ==========================================
         const liveCanvas = document.getElementById('relay-live-canvas');
         const liveCtx = liveCanvas.getContext('2d');
@@ -3094,11 +3145,12 @@
         const V_WIDTH = 800;
         const V_HEIGHT = 450;
         const BOARD_BG_COLOR = '#1f48ff';
+        const BOARD_CORRECT_RED_COLOR = '#ef4444';
         const PEN_WHITE_COLOR = '#ffffff';
 
         let drawingNow = false;
         let activeSourceCanvas = null;
-        const activeColor = PEN_WHITE_COLOR; // 常に白色
+        const activeColor = PEN_WHITE_COLOR;
         const activeSize = 6;
         let strokeBuffer = [];
         let strokeSyncTimer = null;
@@ -3111,12 +3163,69 @@
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
             });
-            clearBothCanvasesLocal();
+            clearBothCanvasesLocal(false);
         }
 
-        function clearBothCanvasesLocal() {
+        function setPanelBackgroundRedState(isRed) {
+            const bgColor = isRed ? BOARD_CORRECT_RED_COLOR : BOARD_BG_COLOR;
+            [liveCanvas, fsCanvas].forEach(c => {
+                c.style.backgroundColor = bgColor;
+            });
+            const frame = document.getElementById('canvas-frame');
+            const fsContainer = document.getElementById('fs-canvas-container');
+            if (frame) {
+                frame.style.backgroundColor = bgColor;
+                frame.classList.toggle('border-red-500', isRed);
+                frame.classList.toggle('border-blue-500', !isRed);
+            }
+            if (fsContainer) {
+                fsContainer.style.backgroundColor = bgColor;
+                fsContainer.classList.toggle('border-red-500', isRed);
+                fsContainer.classList.toggle('border-cyan-500', !isRed);
+            }
+
+            // ピクセル背景も赤色に変換して、正解済みサムネイル画像も赤色背景にする
             [liveCtx, fsCtx].forEach(ctx => {
-                ctx.fillStyle = BOARD_BG_COLOR;
+                const imgData = ctx.getImageData(0, 0, V_WIDTH, V_HEIGHT);
+                const d = imgData.data;
+                const targetR = isRed ? 239 : 31;
+                const targetG = isRed ? 68 : 72;
+                const targetB = isRed ? 68 : 255;
+
+                for (let i = 0; i < d.length; i += 4) {
+                    const r = d[i];
+                    const g = d[i + 1];
+                    const b = d[i + 2];
+                    // 白色ペン（R,G,Bすべて高い）以外の背景ピクセルを置換
+                    if (!(r > 200 && g > 200 && b > 200)) {
+                        d[i] = targetR;
+                        d[i + 1] = targetG;
+                        d[i + 2] = targetB;
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+            });
+        }
+
+        function clearBothCanvasesLocal(isRed = false) {
+            const bgColor = isRed ? BOARD_CORRECT_RED_COLOR : BOARD_BG_COLOR;
+            [liveCanvas, fsCanvas].forEach(c => {
+                c.style.backgroundColor = bgColor;
+            });
+            const frame = document.getElementById('canvas-frame');
+            const fsContainer = document.getElementById('fs-canvas-container');
+            if (frame) {
+                frame.style.backgroundColor = bgColor;
+                frame.classList.toggle('border-red-500', isRed);
+                frame.classList.toggle('border-blue-500', !isRed);
+            }
+            if (fsContainer) {
+                fsContainer.style.backgroundColor = bgColor;
+                fsContainer.classList.toggle('border-red-500', isRed);
+                fsContainer.classList.toggle('border-cyan-500', !isRed);
+            }
+            [liveCtx, fsCtx].forEach(ctx => {
+                ctx.fillStyle = bgColor;
                 ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
             });
         }
@@ -3132,7 +3241,7 @@
         }
 
         function isMyActiveTurn() {
-            if (!roomState || roomState.status !== 'playing' || roomState.submittedFlag) return false;
+            if (!roomState || roomState.status !== 'playing' || roomState.submittedFlag || roomState.panelHighlightRed) return false;
             const me = roomState.participants?.[currentUser.uid];
             if (!me || me.role !== 'answerer') return false;
             const order = getEffectiveRelayOrder(roomState);
@@ -3249,7 +3358,7 @@
 
         async function executeClearBoard() {
             if (!isMyActiveTurn() || !currentRoomId || !roomState) return;
-            clearBothCanvasesLocal();
+            clearBothCanvasesLocal(false);
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
             await updateDoc(roomRef, {
                 clearVersion: (roomState.clearVersion || 1) + 1
@@ -3287,7 +3396,7 @@
         document.getElementById('btn-exit-fullscreen').addEventListener('click', closeFullscreenBoard);
 
         // ==========================================
-        // 11. フリップ＆サイドリスト描画
+        // 11. 正解済み解答パネル＆サイドリスト描画
         // ==========================================
         function renderClearedFlips(data) {
             const grid = document.getElementById('cleared-flips-grid');
@@ -3299,20 +3408,20 @@
                 const item = cleared[i];
                 const slot = document.createElement('div');
                 if (item) {
-                    slot.className = 'bg-green-50 border-2 border-green-500 rounded-xl p-1.5 flex flex-col shadow-sm animate-pop';
+                    slot.className = 'bg-red-50 border-2 border-red-500 rounded-xl p-1.5 flex flex-col shadow-sm animate-pop';
                     slot.innerHTML = `
                         <div class="flex items-center justify-between text-[10px] font-black mb-1 px-0.5">
-                            <span class="bg-green-500 text-white px-1.5 rounded">⭕ ${i + 1}</span>
-                            <span class="text-green-700 truncate max-w-[85px]">${escapeHtml(item.name)}</span>
+                            <span class="bg-red-500 text-white px-1.5 rounded">⭕ ${i + 1}</span>
+                            <span class="text-red-700 truncate max-w-[85px]">${escapeHtml(item.name)}</span>
                         </div>
-                        <div class="aspect-[16/9] rounded-lg overflow-hidden bg-[#1f48ff] border border-green-300">
+                        <div class="aspect-[16/9] rounded-lg overflow-hidden bg-[#ef4444] border border-red-300">
                             <img src="${item.imageData}" alt="正解${i + 1}" class="w-full h-full object-contain">
                         </div>
                     `;
                 } else {
                     slot.className = 'bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-2 flex flex-col items-center justify-center aspect-[16/11] text-slate-400';
                     slot.innerHTML = `
-                        <span class="text-xs font-black">SLOT ${i + 1}</span>
+                        <span class="text-xs font-black">PANEL ${i + 1}</span>
                         <span class="text-[10px]">未クリア</span>
                     `;
                 }
