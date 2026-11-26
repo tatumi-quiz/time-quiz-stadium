@@ -80,7 +80,7 @@
         }
         canvas.relay-canvas {
             touch-action: none;
-            background-color: #ffffff;
+            background-color: #1f48ff;
         }
         /* アニメーション */
         @keyframes shakeWrong {
@@ -116,43 +116,52 @@
             animation: redAlertPulse 0.75s infinite;
         }
 
-        /* パソコン（PC・横長画面）での全画面解答者＆司会者パネル完全最適化 */
+        /* 全画面表示レイアウト（スマホ横画面・PC共通で右側にボタン＆制限時間メーター配置） */
+        #fs-main-container {
+            flex-direction: row;
+            align-items: stretch;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        #fs-canvas-wrapper {
+            flex: 1 1 auto;
+            min-width: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #fs-right-sidebar {
+            width: 118px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 0.4rem;
+        }
         @media (min-width: 768px) {
             #fs-main-container {
-                flex-direction: row !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 1.5rem !important;
+                gap: 1.25rem;
             }
-            #fs-canvas-wrapper {
-                flex: 1 1 auto !important;
-                height: 100% !important;
-                max-height: calc(100dvh - 130px) !important;
-            }
-            #fs-drawer-toolbar, #fs-host-toolbar {
-                flex-direction: column !important;
-                width: auto !important;
-                min-width: 170px !important;
-                padding: 1rem !important;
-                gap: 1.25rem !important;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important;
-            }
-            #fs-drawer-toolbar button, #fs-host-toolbar button {
-                width: 100% !important;
-                padding: 0.75rem 0.9rem !important;
-                font-size: 0.9rem !important;
+            #fs-right-sidebar {
+                width: 175px;
+                gap: 0.75rem;
             }
         }
-
-        /* スマホ等で全画面時のボタンが大きすぎてパネルを圧迫しないよう調整 */
-        @media (max-width: 767px) {
-            #fs-drawer-toolbar, #fs-host-toolbar {
-                padding: 0.5rem 0.75rem !important;
-                gap: 0.75rem !important;
+        /* スマホ縦向き時のみ上下分割にフォールバック */
+        @media (max-width: 639px) and (orientation: portrait) {
+            #fs-main-container {
+                flex-direction: column;
             }
-            #fs-drawer-toolbar button, #fs-host-toolbar button, #answerer-controls button {
-                padding: 0.45rem 0.85rem !important;
-                font-size: 0.75rem !important;
+            #fs-right-sidebar {
+                width: 100%;
+                flex-direction: row;
+                align-items: stretch;
+                height: auto;
+            }
+            #fs-meter-blocks {
+                flex-direction: row !important;
+                height: 22px !important;
             }
         }
 
@@ -212,44 +221,36 @@
     </div>
 
     <!-- ==================== 手書きパネル全画面表示オーバーレイ ==================== -->
-    <div id="fullscreen-board-modal" class="fixed inset-0 h-[100dvh] bg-white z-[70] hidden flex-col justify-between p-2 sm:p-4 select-none transition-shadow overflow-hidden">
-        <!-- 全画面トップHUD -->
-        <div id="fs-top-hud" class="rainbow-border-panel rounded-2xl p-2 sm:px-4 flex flex-nowrap items-center justify-between gap-1.5 sm:gap-2 shrink-0 overflow-x-auto">
-            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 shrink">
-                <span id="fs-role-tag" class="bg-cyan-500 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg whitespace-nowrap">
+    <div id="fullscreen-board-modal" class="fixed inset-0 h-[100dvh] bg-white z-[70] hidden flex-col justify-between p-1.5 sm:p-3 select-none transition-shadow overflow-hidden">
+        <!-- 全画面トップHUD（制限時間表示を外した分、〇番手〇〇の表示領域を拡大） -->
+        <div id="fs-top-hud" class="rainbow-border-panel rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 flex items-center justify-between gap-2 shrink-0">
+            <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                <span id="fs-role-tag" class="bg-cyan-500 text-white text-[10px] sm:text-xs font-black px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg whitespace-nowrap shrink-0">
                     解答中
                 </span>
-                <span id="fs-drawer-name" class="font-black text-slate-800 text-xs sm:text-lg truncate">
+                <span id="fs-drawer-name" class="font-black text-slate-800 text-sm sm:text-xl truncate">
                     プレイヤー名
                 </span>
             </div>
 
-            <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                <div class="bg-slate-50 border-2 border-green-400 px-2 py-0.5 sm:px-3 sm:py-1 rounded-xl flex items-center gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                <div class="bg-slate-50 border-2 border-green-400 px-2 py-0.5 sm:px-3 sm:py-1 rounded-xl flex items-center">
                     <div class="text-left">
                         <div id="fs-quota-text" class="text-[10px] sm:text-xs font-black text-green-600 leading-tight whitespace-nowrap">
                             クリアまであと 5 問！ (0/5)
                         </div>
-                        <div class="w-20 sm:w-32 h-1.5 sm:h-2 bg-slate-200 rounded-full overflow-hidden mt-0.5 sm:mt-1">
+                        <div class="w-16 sm:w-28 h-1.5 bg-slate-200 rounded-full overflow-hidden mt-0.5">
                             <div id="fs-quota-bar" class="h-full rainbow-gradient-bar transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
-                <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-xl flex items-center gap-1 shadow-sm transition-colors duration-200">
-                    <i id="fs-timer-icon" class="fa-solid fa-stopwatch text-blue-500 text-xs sm:text-sm"></i>
-                    <span id="fs-timer-val" class="font-led font-black text-lg sm:text-2xl text-blue-500 tabular-nums">--</span>
-                    <span class="text-[9px] sm:text-[10px] font-black text-slate-500">SEC</span>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-1.5 shrink-0">
-                <button id="btn-fs-view-image" class="relative px-2.5 py-1.5 sm:px-3 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-xl text-[11px] sm:text-sm game-btn flex items-center gap-1 whitespace-nowrap">
+                <button id="btn-fs-view-image" class="relative px-2 py-1.5 sm:px-3 sm:py-2 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-xl text-[11px] sm:text-sm game-btn flex items-center gap-1 whitespace-nowrap">
                     <i class="fa-regular fa-image"></i>
-                    <span>問題画像</span>
+                    <span class="hidden sm:inline">問題画像</span>
                     <span id="fs-image-new-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full animate-bounce">NEW</span>
                 </button>
-                <button id="btn-exit-fullscreen" class="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-blue-400 font-black rounded-xl text-[11px] sm:text-sm game-btn flex items-center gap-1 whitespace-nowrap">
+                <button id="btn-exit-fullscreen" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border-2 border-blue-400 font-black rounded-xl text-[11px] sm:text-sm game-btn flex items-center gap-1 whitespace-nowrap">
                     <i class="fa-solid fa-compress text-blue-500"></i>
                     <span>通常表示</span>
                 </button>
@@ -257,28 +258,28 @@
         </div>
 
         <!-- 全画面問題文ティッカー -->
-        <div id="fs-question-bar" class="bg-blue-50 border-2 border-blue-300 rounded-xl px-3 py-1 my-1 text-center truncate shrink-0">
-            <span class="text-[10px] font-black bg-blue-500 text-white px-2 py-0.5 rounded mr-1.5">Q</span>
+        <div id="fs-question-bar" class="bg-blue-50 border-2 border-blue-300 rounded-xl px-2.5 py-1 my-1 text-center truncate shrink-0">
+            <span class="text-[10px] font-black bg-blue-500 text-white px-1.5 py-0.5 rounded mr-1">Q</span>
             <span id="fs-question-ticker" class="text-xs sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
         </div>
 
-        <!-- 全画面メインエリア（キャンバス + ツールバー） -->
-        <div id="fs-main-container" class="relative flex-1 min-h-0 w-full flex flex-col items-center justify-center overflow-hidden my-1 gap-2">
-            <!-- キャンバス本体（16:9比率を保ったまま大画面化） -->
-            <div id="fs-canvas-wrapper" class="relative flex-1 min-h-0 w-full flex items-center justify-center overflow-hidden">
-                <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full h-full rounded-2xl overflow-hidden border-4 border-cyan-500 bg-white shadow-xl flex items-center justify-center">
+        <!-- 全画面メインエリア（左：16:9大画面キャンバス ／ 右：右上操作ボタン＋右下制限時間メーター） -->
+        <div id="fs-main-container" class="relative flex-1 min-h-0 w-full flex overflow-hidden">
+            <!-- キャンバス本体（16:9比率を維持したまま最大限拡大） -->
+            <div id="fs-canvas-wrapper" class="relative overflow-hidden">
+                <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full w-auto h-full rounded-2xl overflow-hidden border-4 border-cyan-500 bg-[#1f48ff] shadow-xl flex items-center justify-center">
                     <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
 
-                    <div id="fs-spectating-badge" class="hidden absolute top-3 left-3 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1.5 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
-                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
+                    <div id="fs-spectating-badge" class="hidden absolute top-2.5 left-2.5 bg-white/95 text-blue-600 border-2 border-blue-400 text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
+                        <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
                     </div>
 
-                    <div id="fs-submitted-overlay" class="hidden absolute inset-0 bg-white/30 backdrop-blur-[1px] flex flex-col items-center justify-end p-3 pb-5 text-center z-10 pointer-events-none">
-                        <div class="bg-white/95 border-4 border-orange-400 px-6 py-2.5 rounded-2xl shadow-2xl animate-pop pointer-events-auto">
-                            <div class="text-orange-500 font-black text-base sm:text-lg mb-0.5">
+                    <div id="fs-submitted-overlay" class="hidden absolute inset-0 bg-slate-900/35 backdrop-blur-[1px] flex flex-col items-center justify-end p-3 pb-4 text-center z-10 pointer-events-none">
+                        <div class="bg-white/95 border-4 border-orange-400 px-5 py-2 rounded-2xl shadow-2xl animate-pop pointer-events-auto">
+                            <div class="text-orange-500 font-black text-sm sm:text-lg mb-0.5">
                                 <i class="fa-solid fa-gavel fa-bounce mr-1.5"></i>解答完了！司会者判定中...
                             </div>
-                            <p class="text-[11px] sm:text-xs text-slate-600 font-bold">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
+                            <p class="text-[10px] sm:text-xs text-slate-600 font-bold">司会者が「⭕ 正解」か「❌ 不正解」を判定します</p>
                         </div>
                     </div>
 
@@ -292,24 +293,52 @@
                 </div>
             </div>
 
-            <!-- 全画面ツールバー（解答者用：全消し・解答完了） -->
-            <div id="fs-drawer-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-2 sm:p-2.5 flex items-center justify-center gap-3 sm:gap-4">
-                <button id="btn-fs-clear" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
-                    <i class="fa-solid fa-trash-can mr-1"></i>全消し
-                </button>
-                <button id="btn-fs-submit" class="px-4.5 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
-                    <i class="fa-solid fa-bell mr-1"></i>解答完了！
-                </button>
-            </div>
+            <!-- 全画面右サイドバー（右上：全消し・解答完了ボタン ／ 下側：制限時間メーター） -->
+            <div id="fs-right-sidebar" class="min-h-0">
+                <!-- 右上：解答者用ツールバー（全消し・解答完了） -->
+                <div id="fs-drawer-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-1.5 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2">
+                    <button id="btn-fs-clear" class="w-full py-2 sm:py-2.5 px-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
+                        <i class="fa-solid fa-trash-can mr-1"></i>全消し
+                    </button>
+                    <button id="btn-fs-submit" class="w-full py-2 sm:py-2.5 px-2 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap">
+                        <i class="fa-solid fa-bell mr-1"></i>解答完了！
+                    </button>
+                </div>
 
-            <!-- 全画面ツールバー（司会者用：正解・不正解判定ボタン） -->
-            <div id="fs-host-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-2 sm:p-2.5 flex items-center justify-center gap-3 sm:gap-4">
-                <button id="btn-fs-correct" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap flex items-center justify-center gap-1">
-                    <span class="text-base sm:text-lg">⭕</span><span>正解！</span>
-                </button>
-                <button id="btn-fs-wrong" class="px-3.5 sm:px-5 py-2 sm:py-2.5 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap flex items-center justify-center gap-1">
-                    <span class="text-base sm:text-lg">❌</span><span>不正解</span>
-                </button>
+                <!-- 右上：司会者用ツールバー（正解・不正解判定ボタン） -->
+                <div id="fs-host-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-2xl p-1.5 sm:p-2.5 flex flex-col gap-1.5 sm:gap-2">
+                    <button id="btn-fs-correct" class="w-full py-2 sm:py-2.5 px-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap flex items-center justify-center gap-1">
+                        <span>⭕</span><span>正解！</span>
+                    </button>
+                    <button id="btn-fs-wrong" class="w-full py-2 sm:py-2.5 px-2 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn whitespace-nowrap flex items-center justify-center gap-1">
+                        <span>❌</span><span>不正解</span>
+                    </button>
+                </div>
+
+                <!-- 右下空きスペース：制限時間メーター（10段階グラデーションブロック＋従来の制限時間表示を一体化） -->
+                <div id="fs-time-meter-wrapper" class="flex-1 min-h-0 flex flex-col justify-end">
+                    <div class="w-full h-full max-h-[360px] flex flex-col">
+                        <!-- 上から下へ 青→緑→黄→オレンジ→赤 の10個ブロック -->
+                        <div id="fs-meter-blocks" class="flex-1 min-h-[70px] w-full flex flex-col gap-1 p-1.5 bg-slate-900/90 border-2 border-b-0 border-slate-700 rounded-t-2xl shadow-inner">
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="0" style="background-color:#2563eb; box-shadow:0 0 8px #2563eb;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="1" style="background-color:#0284c7; box-shadow:0 0 8px #0284c7;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="2" style="background-color:#059669; box-shadow:0 0 8px #059669;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="3" style="background-color:#16a34a; box-shadow:0 0 8px #16a34a;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="4" style="background-color:#84cc16; box-shadow:0 0 8px #84cc16;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="5" style="background-color:#eab308; box-shadow:0 0 8px #eab308;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="6" style="background-color:#f59e0b; box-shadow:0 0 8px #f59e0b;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="7" style="background-color:#f97316; box-shadow:0 0 8px #f97316;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="8" style="background-color:#ea580c; box-shadow:0 0 8px #ea580c;"></div>
+                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="9" style="background-color:#ef4444; box-shadow:0 0 8px #ef4444;"></div>
+                        </div>
+                        <!-- ブロックの真下にくっつく従来の制限時間表示 -->
+                        <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-2 py-1.5 sm:px-3 sm:py-2 rounded-b-2xl rounded-t-none flex items-center justify-center gap-1 shadow-md transition-colors duration-200 shrink-0">
+                            <i id="fs-timer-icon" class="fa-solid fa-stopwatch text-blue-500 text-xs sm:text-sm"></i>
+                            <span id="fs-timer-val" class="font-led font-black text-xl sm:text-3xl text-blue-500 tabular-nums leading-none">--</span>
+                            <span class="text-[9px] sm:text-[10px] font-black text-slate-500">SEC</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -670,14 +699,14 @@
                         </div>
                     </div>
 
-                    <div id="canvas-frame" class="canvas-container-box relative w-full max-w-2xl mx-auto aspect-[16/9] max-h-[55vh] rounded-2xl overflow-hidden border-4 border-blue-500 bg-white shadow-lg flex items-center justify-center">
+                    <div id="canvas-frame" class="canvas-container-box relative w-full max-w-2xl mx-auto aspect-[16/9] max-h-[55vh] rounded-2xl overflow-hidden border-4 border-blue-500 bg-[#1f48ff] shadow-lg flex items-center justify-center">
                         <canvas id="relay-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
 
                         <div id="canvas-readonly-badge" class="hidden absolute top-2.5 left-2.5 bg-white/95 text-blue-600 border-2 border-blue-400 text-xs font-black px-3 py-1 rounded-full pointer-events-none flex items-center gap-1.5 shadow">
                             <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> ライブ中継中
                         </div>
 
-                        <div id="submitted-waiting-overlay" class="hidden absolute inset-0 bg-white/30 backdrop-blur-[1px] flex flex-col items-center justify-end p-3 pb-5 text-center pointer-events-none">
+                        <div id="submitted-waiting-overlay" class="hidden absolute inset-0 bg-slate-900/35 backdrop-blur-[1px] flex flex-col items-center justify-end p-3 pb-5 text-center pointer-events-none">
                             <div class="bg-white/95 border-4 border-orange-400 px-6 py-2.5 rounded-2xl shadow-xl animate-pop pointer-events-auto">
                                 <div class="text-orange-500 font-black text-base sm:text-lg mb-0.5">
                                     <i class="fa-solid fa-gavel fa-bounce mr-1.5"></i>解答完了！司会者判定中...
@@ -950,7 +979,6 @@
         // 音声ファイル自動軽量化・圧縮関数（5000KB以上完全対応）
         // ==========================================
         async function compressAudioFile(file, forceTargetRate = 16000) {
-            // 1.5MB以下かつ強制圧縮でなければそのまま返す
             if (file.size <= 1.5 * 1024 * 1024 && forceTargetRate === 16000) {
                 return file;
             }
@@ -960,7 +988,6 @@
                 const tempCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const audioBuffer = await tempCtx.decodeAudioData(arrayBuffer);
 
-                // 長さに応じてサンプルレートを自動最適化（5MB以上の長尺BGMも確実に軽量化）
                 let targetSampleRate = forceTargetRate;
                 if (audioBuffer.duration > 180) {
                     targetSampleRate = 8000;
@@ -1050,14 +1077,11 @@
             });
         }
 
-        // 音声データを全プレイヤーへ確実に共有（Firebase Storage優先 → 失敗時Firestoreチャンク分割保存）
         async function uploadAndShareAudio(roomId, key, rawFile, statusEl) {
             const audioId = `${key}_${Date.now()}`;
-            // まず5MB以上のファイルでもブラウザで扱いやすく・確実に共有できるよう最適化
             if (statusEl) statusEl.textContent = `⏳ 音声最適化中 (${(rawFile.size / 1024).toFixed(0)}KB)...`;
             const optimizedFile = await compressAudioFile(rawFile);
 
-            // 方法A: Firebase Storage へのアップロード（タイムアウト12秒付き）
             try {
                 if (statusEl) statusEl.textContent = `☁️ 全員へ共有アップロード中...`;
                 const sRef = storageRef(storage, `stadium_audio/${appId}/${roomId}/${audioId}_${optimizedFile.name}`);
@@ -1103,12 +1127,10 @@
                 console.warn("Storage upload skipped/failed, falling back to Firestore chunked sync:", storageErr);
             }
 
-            // 方法B: Storageが使えない/エラーになる環境でも確実に全プレイヤーに共有できるFirestoreチャンク分割保存
             if (statusEl) statusEl.textContent = `📡 ルーム内データ同期中...`;
             let fileForChunks = optimizedFile;
             let dataUrl = await fileToDataURL(fileForChunks);
 
-            // Base64が大きすぎる場合(8MB超)はさらにサンプルレートを下げて再圧縮
             if (dataUrl.length > 8000000) {
                 fileForChunks = await compressAudioFile(rawFile, 8000);
                 dataUrl = await fileToDataURL(fileForChunks);
@@ -1117,7 +1139,6 @@
                 throw new Error("音声時間が長すぎます（約8分以内にしてください）");
             }
 
-            // Firestore1ドキュメント1MB制限を安全に回避するため、650KBずつ分割して保存
             const CHUNK_SIZE = 650000;
             const totalChunks = Math.ceil(dataUrl.length / CHUNK_SIZE);
             const chunksCol = collection(db, 'artifacts', appId, 'public', 'data', `stadium_rainbow_audio_${roomId}`);
@@ -1144,7 +1165,6 @@
             };
         }
 
-        // 他プレイヤー側からチャンク分割された共有音声を復元して読み込む
         const loadingSharedAudioIds = new Set();
         async function loadSharedAudioFromRoom(roomId, key, sharedMeta) {
             const slot = customMediaPlayers[key];
@@ -1298,7 +1318,6 @@
                         const sharedResult = await uploadAndShareAudio(currentRoomId, key, rawFile, statusEl);
                         const localPlayableUrl = sharedResult.mode === 'url' ? sharedResult.url : sharedResult.localDataUrl;
 
-                        // まず自分の端末に即セット
                         customMediaPlayers[key].videoEl.pause();
                         customMediaPlayers[key].videoEl.src = localPlayableUrl;
                         customMediaPlayers[key].videoEl.load();
@@ -1308,7 +1327,6 @@
                         customMediaPlayers[key].fileName = rawFile.name;
                         if (statusEl) statusEl.textContent = `🌐 全員共有中: ${rawFile.name}`;
 
-                        // Firestoreのルーム情報に共有メタデータを書き込んで全プレイヤーに配信
                         const roomMetaPayload = {
                             mode: sharedResult.mode,
                             audioId: sharedResult.audioId,
@@ -1942,7 +1960,6 @@
             const prevStatus = roomState ? roomState.status : null;
             roomState = data;
 
-            // 全プレイヤー共通：司会者が設定した共有BGM・効果音を自動受信＆同期
             if (currentRoomId) {
                 const sharedSounds = data.sharedSounds || {};
                 SOUND_DEFS.forEach(def => {
@@ -2851,7 +2868,6 @@
             showToast("待機状態にリセットしました", "info");
         });
 
-        // 共通判定ロジック（正解）
         async function handleJudgeCorrect() {
             if (!currentRoomId || !roomState || roomState.status !== 'playing') return;
             const activeOrder = getEffectiveRelayOrder(roomState);
@@ -2892,7 +2908,6 @@
             }
         }
 
-        // 共通判定ロジック（不正解）
         async function handleJudgeWrong() {
             if (!currentRoomId || !roomState || roomState.status !== 'playing') return;
             const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
@@ -2932,7 +2947,7 @@
         }
 
         // ==========================================
-        // 9. カウントダウンタイマー
+        // 9. カウントダウンタイマー＆制限時間メーター更新
         // ==========================================
         let lastBeep = -1;
         let hasTriggeredLocalTimeup = false;
@@ -2968,6 +2983,41 @@
             return { textCls: 'text-blue-500', iconCls: 'text-blue-500', borderCls: 'border-blue-500', bgCls: 'bg-white' };
         }
 
+        const METER_BLOCK_COLORS = [
+            '#2563eb', // 1: 青
+            '#0284c7', // 2: 青水色
+            '#059669', // 3: 青緑
+            '#16a34a', // 4: 緑
+            '#84cc16', // 5: 黄緑
+            '#eab308', // 6: 黄
+            '#f59e0b', // 7: 山吹
+            '#f97316', // 8: オレンジ
+            '#ea580c', // 9: 濃オレンジ
+            '#ef4444'  // 10: 赤
+        ];
+
+        function updateTimeMeterBlocks(rem, totalLimit) {
+            const blocks = document.querySelectorAll('.fs-meter-block');
+            if (!blocks.length) return;
+            const limit = Math.max(1, totalLimit || 60);
+            const stepSec = limit / 10;
+            const activeCount = rem <= 0 ? 0 : Math.min(10, Math.ceil(rem / stepSec));
+            const offCount = 10 - activeCount;
+
+            blocks.forEach((el, idx) => {
+                if (idx < offCount) {
+                    el.style.backgroundColor = '#1e293b';
+                    el.style.boxShadow = 'none';
+                    el.style.opacity = '0.35';
+                } else {
+                    const col = METER_BLOCK_COLORS[idx];
+                    el.style.backgroundColor = col;
+                    el.style.boxShadow = `0 0 8px ${col}`;
+                    el.style.opacity = '1';
+                }
+            });
+        }
+
         function applyTimerAppearance(rem, totalLimit) {
             const style = getTimerColorStyle(rem, totalLimit);
             const timerEl = document.getElementById('disp-timer');
@@ -2981,9 +3031,11 @@
             iconEl.className = `fa-solid fa-stopwatch ${style.iconCls} transition-colors duration-200`;
             boxEl.className = `flex items-center gap-2 ${style.bgCls} border-2 ${style.borderCls} px-3.5 py-1 rounded-xl shadow-sm transition-colors duration-200`;
 
-            fsTimerEl.className = `font-led font-black text-xl sm:text-2xl ${style.textCls} tabular-nums transition-colors duration-200`;
-            fsIconEl.className = `fa-solid fa-stopwatch ${style.iconCls} text-sm transition-colors duration-200`;
-            fsBoxEl.className = `${style.bgCls} border-2 ${style.borderCls} px-3 py-1 rounded-xl flex items-center gap-1.5 shadow-sm transition-colors duration-200`;
+            fsTimerEl.className = `font-led font-black text-xl sm:text-3xl ${style.textCls} tabular-nums leading-none transition-colors duration-200`;
+            fsIconEl.className = `fa-solid fa-stopwatch ${style.iconCls} text-xs sm:text-sm transition-colors duration-200`;
+            fsBoxEl.className = `${style.bgCls} border-2 ${style.borderCls} px-2 py-1.5 sm:px-3 sm:py-2 rounded-b-2xl rounded-t-none flex items-center justify-center gap-1 shadow-md transition-colors duration-200 shrink-0`;
+
+            updateTimeMeterBlocks(rem, totalLimit);
         }
 
         async function updateCountdown() {
@@ -3032,7 +3084,7 @@
         }
 
         // ==========================================
-        // 10. 手書きキャンバス（黒ペン固定）
+        // 10. 手書きキャンバス（背景 #1f48ff / 白ペン固定）
         // ==========================================
         const liveCanvas = document.getElementById('relay-live-canvas');
         const liveCtx = liveCanvas.getContext('2d');
@@ -3041,10 +3093,12 @@
 
         const V_WIDTH = 800;
         const V_HEIGHT = 450;
+        const BOARD_BG_COLOR = '#1f48ff';
+        const PEN_WHITE_COLOR = '#ffffff';
 
         let drawingNow = false;
         let activeSourceCanvas = null;
-        const activeColor = '#0f172a'; // 常に黒色
+        const activeColor = PEN_WHITE_COLOR; // 常に白色
         const activeSize = 6;
         let strokeBuffer = [];
         let strokeSyncTimer = null;
@@ -3062,14 +3116,14 @@
 
         function clearBothCanvasesLocal() {
             [liveCtx, fsCtx].forEach(ctx => {
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = BOARD_BG_COLOR;
                 ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
             });
         }
 
         function drawTextStampOnBoth(text) {
             [liveCtx, fsCtx].forEach(ctx => {
-                ctx.fillStyle = '#0f172a';
+                ctx.fillStyle = PEN_WHITE_COLOR;
                 ctx.font = '900 72px "M PLUS Rounded 1c", sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -3168,7 +3222,7 @@
             if (!pts || pts.length === 0) return;
             [liveCtx, fsCtx].forEach(ctx => {
                 ctx.beginPath();
-                ctx.strokeStyle = stroke.color || '#0f172a';
+                ctx.strokeStyle = PEN_WHITE_COLOR;
                 ctx.lineWidth = stroke.size || 6;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
@@ -3251,7 +3305,7 @@
                             <span class="bg-green-500 text-white px-1.5 rounded">⭕ ${i + 1}</span>
                             <span class="text-green-700 truncate max-w-[85px]">${escapeHtml(item.name)}</span>
                         </div>
-                        <div class="aspect-[16/9] rounded-lg overflow-hidden bg-white border border-green-300">
+                        <div class="aspect-[16/9] rounded-lg overflow-hidden bg-[#1f48ff] border border-green-300">
                             <img src="${item.imageData}" alt="正解${i + 1}" class="w-full h-full object-contain">
                         </div>
                     `;
