@@ -110,21 +110,13 @@
             animation: cutinSlide 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        /* 全画面表示レイアウト：左にコンパクトな全消し・完了ボタン、中央に大きな16:9パネル、右に縦長の制限時間メーター */
+        /* 全画面表示レイアウト：左サイドバーを廃止し、中央16:9パネルを最大化、右に30ブロック制限時間メーター */
         #fs-main-container {
             display: flex;
             flex-direction: row;
             align-items: stretch;
             justify-content: space-between;
-            gap: 0.45rem;
-        }
-        #fs-left-sidebar {
-            width: 82px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: stretch;
+            gap: 0.4rem;
         }
         #fs-canvas-wrapper {
             flex: 1 1 auto;
@@ -135,7 +127,7 @@
             justify-content: center;
         }
         #fs-right-sidebar {
-            width: 78px;
+            width: 56px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -143,13 +135,10 @@
         }
         @media (min-width: 768px) {
             #fs-main-container {
-                gap: 1rem;
-            }
-            #fs-left-sidebar {
-                width: 140px;
+                gap: 0.85rem;
             }
             #fs-right-sidebar {
-                width: 130px;
+                width: 96px;
             }
         }
         /* スマホ縦向き時のみ上下分割にフォールバック */
@@ -157,18 +146,14 @@
             #fs-main-container {
                 flex-direction: column;
             }
-            #fs-left-sidebar {
-                width: 100%;
-                flex-direction: row;
-            }
             #fs-right-sidebar {
                 width: 100%;
                 height: auto;
             }
             #fs-meter-blocks {
                 flex-direction: row !important;
-                height: 22px !important;
-                min-height: 22px !important;
+                height: 20px !important;
+                min-height: 20px !important;
             }
         }
 
@@ -227,10 +212,40 @@
         </div>
     </div>
 
+    <!-- ==================== 問題スライドショー全画面モーダル（全解答者・観覧者同期） ==================== -->
+    <div id="slideshow-viewer-modal" class="fixed inset-0 bg-slate-950/92 backdrop-blur-md z-[110] hidden flex-col items-center justify-between p-3 sm:p-6 select-none">
+        <div class="w-full max-w-5xl flex items-center justify-between gap-2 bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="bg-gradient-to-r from-pink-500 to-orange-500 text-white text-xs font-black px-2.5 py-1 rounded-lg animate-pulse shrink-0">
+                    <i class="fa-solid fa-film mr-1"></i>SLIDESHOW
+                </span>
+                <span id="slideshow-progress-badge" class="bg-cyan-500 text-white text-xs font-black px-2.5 py-1 rounded-lg shrink-0">1 / 1</span>
+                <h3 id="slideshow-current-title" class="font-black text-sm sm:text-lg truncate">問題スライドショー</h3>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <span class="hidden sm:inline-block text-xs font-bold text-cyan-300">4秒ごとに自動切替</span>
+                <button id="btn-stop-slideshow-modal" class="hidden px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs game-btn">
+                    <i class="fa-solid fa-stop mr-1"></i>配信終了
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 w-full max-w-5xl my-3 flex items-center justify-center min-h-0 overflow-hidden">
+            <div class="relative w-full h-full flex items-center justify-center rounded-2xl overflow-hidden bg-black/50 border-2 border-white/20 p-2">
+                <img id="slideshow-current-img" src="" alt="スライドショー画像" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-all duration-300">
+            </div>
+        </div>
+
+        <!-- 4秒プログレスバー -->
+        <div class="w-full max-w-5xl bg-white/20 h-2.5 rounded-full overflow-hidden p-0.5">
+            <div id="slideshow-timer-bar" class="h-full rainbow-gradient-bar rounded-full transition-all duration-100" style="width: 100%"></div>
+        </div>
+    </div>
+
     <!-- ==================== 手書きパネル全画面表示オーバーレイ ==================== -->
-    <div id="fullscreen-board-modal" class="fixed inset-0 h-[100dvh] bg-white z-[70] hidden flex-col justify-between p-1 sm:p-2.5 select-none overflow-hidden">
-        <!-- 全画面トップHUD（スマホでもスリムでPC風のスマートな表示） -->
-        <div id="fs-top-hud" class="rainbow-border-panel rounded-xl px-2 py-0.5 sm:px-3.5 sm:py-1.5 flex items-center justify-between gap-1.5 shrink-0">
+    <div id="fullscreen-board-modal" class="fixed inset-0 h-[100dvh] bg-white z-[70] hidden flex-col justify-between p-1 sm:p-2 select-none overflow-hidden">
+        <!-- 全画面トップHUD -->
+        <div id="fs-top-hud" class="rainbow-border-panel rounded-xl px-2 py-0.5 sm:px-3.5 sm:py-1 flex items-center justify-between gap-1.5 shrink-0">
             <div class="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
                 <span id="fs-role-tag" class="bg-cyan-500 text-white text-[9px] sm:text-xs font-black px-1.5 py-0.5 sm:px-2.5 sm:py-0.5 rounded-md whitespace-nowrap shrink-0">
                     解答中
@@ -252,11 +267,6 @@
                     </div>
                 </div>
 
-                <button id="btn-fs-view-image" class="relative px-1.5 py-1 sm:px-2.5 sm:py-1.5 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn flex items-center gap-1 whitespace-nowrap">
-                    <i class="fa-regular fa-image"></i>
-                    <span class="hidden sm:inline">問題画像</span>
-                    <span id="fs-image-new-badge" class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] font-black px-1 py-0.5 rounded-full animate-bounce">NEW</span>
-                </button>
                 <button id="btn-exit-fullscreen" class="px-1.5 py-1 sm:px-2.5 sm:py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-blue-400 sm:border-2 font-black rounded-lg text-[10px] sm:text-xs game-btn flex items-center gap-1 whitespace-nowrap">
                     <i class="fa-solid fa-compress text-blue-500"></i>
                     <span>通常表示</span>
@@ -264,38 +274,15 @@
             </div>
         </div>
 
-        <!-- 全画面問題文ティッカー（スリム化） -->
-        <div id="fs-question-bar" class="bg-blue-50 border border-blue-300 sm:border-2 rounded-lg px-2 py-0.5 my-0.5 sm:my-1 text-center truncate shrink-0">
+        <!-- 全画面問題文ティッカー -->
+        <div id="fs-question-bar" class="bg-blue-50 border border-blue-300 sm:border-2 rounded-lg px-2 py-0.5 my-0.5 text-center truncate shrink-0">
             <span class="text-[9px] sm:text-[10px] font-black bg-blue-500 text-white px-1.5 py-0.2 rounded mr-1">Q</span>
             <span id="fs-question-ticker" class="text-[11px] sm:text-sm font-black text-slate-800">問題文がここに表示されます</span>
         </div>
 
-        <!-- 全画面メインエリア（左：小さめの全消し・解答完了ボタン ／ 中央：最大化16:9パネル ／ 右：上方向に最大化制限時間メーター） -->
+        <!-- 全画面メインエリア（中央：16:9最大化パネル ／ 右：30ブロック制限時間メーター） -->
         <div id="fs-main-container" class="relative flex-1 min-h-0 w-full overflow-hidden">
-            <!-- 左サイドバー：左上にコンパクトな操作ボタン -->
-            <div id="fs-left-sidebar" class="min-h-0">
-                <!-- 左上：解答者用ツールバー（小さめの全消し・解答完了ボタン） -->
-                <div id="fs-drawer-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-xl p-1 sm:p-2 flex flex-row sm:flex-col gap-1 sm:gap-1.5">
-                    <button id="btn-fs-clear" class="flex-1 sm:w-full py-1 sm:py-2 px-1.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center justify-center gap-0.5">
-                        <i class="fa-solid fa-trash-can"></i><span>全消し</span>
-                    </button>
-                    <button id="btn-fs-submit" class="flex-1 sm:w-full py-1 sm:py-2 px-1.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center justify-center gap-0.5">
-                        <i class="fa-solid fa-bell"></i><span>解答完了</span>
-                    </button>
-                </div>
-
-                <!-- 左上：司会者用ツールバー（正解・不正解判定ボタン） -->
-                <div id="fs-host-toolbar" class="hidden shrink-0 rainbow-border-panel rounded-xl p-1 sm:p-2 flex flex-row sm:flex-col gap-1 sm:gap-1.5">
-                    <button id="btn-fs-correct" class="flex-1 sm:w-full py-1 sm:py-2 px-1.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center justify-center gap-0.5">
-                        <span>⭕</span><span>正解</span>
-                    </button>
-                    <button id="btn-fs-wrong" class="flex-1 sm:w-full py-1 sm:py-2 px-1.5 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-lg text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center justify-center gap-0.5">
-                        <span>❌</span><span>不正解</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 中央キャンバス本体（16:9比率を維持したまま最大限拡大） -->
+            <!-- 中央キャンバス本体（左デッドスペースなし・16:9比率を維持したまま最大限拡大） -->
             <div id="fs-canvas-wrapper" class="relative overflow-hidden">
                 <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full w-auto h-full rounded-xl sm:rounded-2xl overflow-hidden border-[3px] sm:border-4 border-cyan-500 bg-[#1f48ff] shadow-xl flex items-center justify-center transition-colors duration-200">
                     <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
@@ -304,7 +291,42 @@
                         <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
                     </div>
 
-                    <div id="fs-submitted-overlay" class="hidden absolute inset-0 bg-slate-900/35 backdrop-blur-[1px] flex flex-col items-center justify-end p-2 pb-3 text-center z-10 pointer-events-none">
+                    <!-- パネル内下部中央：解答者用コンパクト横1列ツールバー（全削除・解答完了・問題画像） -->
+                    <div id="fs-drawer-toolbar" class="hidden absolute bottom-1.5 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1 sm:gap-1.5 bg-slate-900/65 backdrop-blur-xs px-2 py-1 rounded-full border border-white/30 shadow-lg">
+                        <button id="btn-fs-clear" class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-red-500 hover:bg-red-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                            <i class="fa-solid fa-trash-can"></i><span>全削除</span>
+                        </button>
+                        <button id="btn-fs-submit" class="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                            <i class="fa-solid fa-bell"></i><span>解答完了</span>
+                        </button>
+                        <button id="btn-fs-view-image" class="relative px-2 py-0.5 sm:px-2.5 sm:py-1 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                            <i class="fa-regular fa-image"></i><span>問題画像</span>
+                            <span id="fs-image-new-badge" class="hidden absolute -top-1.5 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full animate-bounce">NEW</span>
+                        </button>
+                    </div>
+
+                    <!-- パネル内下部中央：司会者用コンパクト横1列ツールバー（正解・不正解・問題画像） -->
+                    <div id="fs-host-toolbar" class="hidden absolute bottom-1.5 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1 sm:gap-1.5 bg-slate-900/65 backdrop-blur-xs px-2 py-1 rounded-full border border-white/30 shadow-lg">
+                        <button id="btn-fs-correct" class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-red-500 hover:bg-red-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                            <span>⭕</span><span>正解</span>
+                        </button>
+                        <button id="btn-fs-wrong" class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                            <span>❌</span><span>不正解</span>
+                        </button>
+                        <button id="btn-fs-host-view-image" class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                            <i class="fa-regular fa-image"></i><span>問題画像</span>
+                        </button>
+                    </div>
+
+                    <!-- パネル内下部中央：観覧者・待機者用コンパクト問題画像ボタン -->
+                    <div id="fs-viewer-toolbar" class="hidden absolute bottom-1.5 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1 bg-slate-900/65 backdrop-blur-xs px-2 py-1 rounded-full border border-white/30 shadow-lg">
+                        <button id="btn-fs-spec-view-image" class="relative px-2.5 py-0.5 sm:px-3 sm:py-1 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                            <i class="fa-regular fa-image"></i><span>問題画像</span>
+                            <span id="fs-spec-image-new-badge" class="hidden absolute -top-1.5 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full animate-bounce">NEW</span>
+                        </button>
+                    </div>
+
+                    <div id="fs-submitted-overlay" class="hidden absolute inset-0 bg-slate-900/35 backdrop-blur-[1px] flex flex-col items-center justify-center p-2 text-center z-10 pointer-events-none">
                         <div class="bg-white/95 border-2 sm:border-4 border-orange-400 px-4 py-1.5 rounded-xl shadow-2xl animate-pop pointer-events-auto">
                             <div class="text-orange-500 font-black text-xs sm:text-base">
                                 <i class="fa-solid fa-gavel fa-bounce mr-1"></i>解答完了！司会者判定中...
@@ -322,28 +344,17 @@
                 </div>
             </div>
 
-            <!-- 右サイドバー：上方向いっぱいに広げた制限時間メーター -->
+            <!-- 右サイドバー：30ブロック構成の縦長制限時間メーター -->
             <div id="fs-right-sidebar" class="min-h-0">
                 <div id="fs-time-meter-wrapper" class="flex-1 h-full min-h-0 flex flex-col justify-stretch">
                     <div class="w-full h-full flex flex-col">
-                        <!-- 上から下へ 青→緑→黄→オレンジ→赤 の10個ブロック（上方向いっぱいに伸縮） -->
-                        <div id="fs-meter-blocks" class="flex-1 min-h-0 w-full flex flex-col gap-0.5 sm:gap-1 p-1 sm:p-1.5 bg-slate-900/90 border-2 border-b-0 border-slate-700 rounded-t-xl sm:rounded-t-2xl shadow-inner">
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="0" style="background-color:#2563eb; box-shadow:0 0 8px #2563eb;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="1" style="background-color:#0284c7; box-shadow:0 0 8px #0284c7;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="2" style="background-color:#059669; box-shadow:0 0 8px #059669;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="3" style="background-color:#16a34a; box-shadow:0 0 8px #16a34a;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="4" style="background-color:#84cc16; box-shadow:0 0 8px #84cc16;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="5" style="background-color:#eab308; box-shadow:0 0 8px #eab308;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="6" style="background-color:#f59e0b; box-shadow:0 0 8px #f59e0b;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="7" style="background-color:#f97316; box-shadow:0 0 8px #f97316;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="8" style="background-color:#ea580c; box-shadow:0 0 8px #ea580c;"></div>
-                            <div class="fs-meter-block flex-1 rounded-sm transition-all duration-200" data-block-idx="9" style="background-color:#ef4444; box-shadow:0 0 8px #ef4444;"></div>
-                        </div>
+                        <!-- 上から下へ 青→緑→黄→オレンジ→赤 の30個ブロック（JSで動的生成） -->
+                        <div id="fs-meter-blocks" class="flex-1 min-h-0 w-full flex flex-col gap-[1px] sm:gap-[2px] p-1 bg-slate-900/90 border-2 border-b-0 border-slate-700 rounded-t-xl sm:rounded-t-2xl shadow-inner"></div>
                         <!-- ブロックの真下にくっつく制限時間表示 -->
-                        <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-1 py-1 sm:px-2 sm:py-1.5 rounded-b-xl sm:rounded-b-2xl rounded-t-none flex items-center justify-center gap-0.5 sm:gap-1 shadow-md transition-colors duration-200 shrink-0">
-                            <i id="fs-timer-icon" class="fa-solid fa-stopwatch text-blue-500 text-[10px] sm:text-sm"></i>
-                            <span id="fs-timer-val" class="font-led font-black text-base sm:text-2xl text-blue-500 tabular-nums leading-none">--</span>
-                            <span class="text-[8px] sm:text-[10px] font-black text-slate-500">SEC</span>
+                        <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-1 py-1 sm:px-1.5 sm:py-1.5 rounded-b-xl sm:rounded-b-2xl rounded-t-none flex items-center justify-center gap-0.5 shadow-md transition-colors duration-200 shrink-0">
+                            <i id="fs-timer-icon" class="fa-solid fa-stopwatch text-blue-500 text-[9px] sm:text-xs"></i>
+                            <span id="fs-timer-val" class="font-led font-black text-sm sm:text-xl text-blue-500 tabular-nums leading-none">--</span>
+                            <span class="text-[7px] sm:text-[9px] font-black text-slate-500">SEC</span>
                         </div>
                     </div>
                 </div>
@@ -549,9 +560,6 @@
                             <i class="fa-solid fa-crown text-yellow-500"></i> 司会者コントロール＆問題設定
                         </h3>
                         <div class="flex flex-wrap gap-1.5">
-                            <button id="btn-load-sample" class="px-2.5 py-1.5 bg-yellow-50 hover:bg-yellow-100 text-orange-600 border-2 border-yellow-400 rounded-lg text-xs font-black transition">
-                                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>例題セット
-                            </button>
                             <button id="btn-add-bot" class="px-2.5 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-xs font-black transition">
                                 <i class="fa-solid fa-robot mr-1"></i>ダミー解答者追加
                             </button>
@@ -637,11 +645,11 @@
                         </div>
                     </div>
 
-                    <!-- タブ3：複数枚の問題画像＆タイミング公開 -->
+                    <!-- タブ3：複数枚の問題画像＆スライドショー配信 -->
                     <div id="tab-images" class="host-tab-content hidden space-y-2.5 text-xs mb-3">
                         <div class="bg-purple-50 p-3 rounded-xl border-2 border-purple-300 space-y-2">
                             <div class="flex flex-wrap items-center justify-between gap-2">
-                                <span class="font-black text-purple-700"><i class="fa-solid fa-folder-plus mr-1"></i>問題画像を登録（複数枚OK・クイズ中いつでも公開可）</span>
+                                <span class="font-black text-purple-700"><i class="fa-solid fa-folder-plus mr-1"></i>問題画像を登録（チェックした順番でスライドショー配信可）</span>
                                 <button type="button" id="btn-hide-public-image" class="px-2.5 py-1 bg-white hover:bg-red-500 text-slate-700 hover:text-white border border-slate-300 rounded-lg font-black transition">
                                     <i class="fa-solid fa-eye-slash mr-1"></i>公開中の画像を非公開にする
                                 </button>
@@ -659,9 +667,27 @@
                                     <button type="button" id="btn-add-url-image" class="px-2.5 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-white font-black rounded-lg">追加</button>
                                 </div>
                             </div>
+
+                            <!-- スライドショーコントロールバー -->
+                            <div class="pt-2 border-t border-purple-200 flex flex-wrap items-center justify-between gap-2">
+                                <div class="text-[11px] font-extrabold text-purple-800">
+                                    <i class="fa-solid fa-list-ol mr-1"></i>スライド順選択中: <span id="slideshow-selected-count" class="font-black text-pink-600">0</span> 枚（各4秒表示）
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button type="button" id="btn-clear-slideshow-order" class="px-2 py-1 bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 font-black rounded-lg text-[11px]">
+                                        選択解除
+                                    </button>
+                                    <button type="button" id="btn-start-slideshow" class="px-3 py-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-black rounded-lg text-[11px] game-btn">
+                                        <i class="fa-solid fa-play mr-1"></i>全員にスライドショー配信
+                                    </button>
+                                    <button type="button" id="btn-stop-slideshow" class="hidden px-3 py-1 bg-red-600 text-white font-black rounded-lg text-[11px] game-btn">
+                                        <i class="fa-solid fa-stop mr-1"></i>配信停止
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
-                        <div id="host-image-gallery" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-52 overflow-y-auto pr-1"></div>
+                        <div id="host-image-gallery" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto pr-1"></div>
                         <div id="host-image-empty" class="text-center py-4 text-slate-400 font-bold">
                             まだ問題画像が登録されていません。
                         </div>
@@ -1186,7 +1212,7 @@
                     slot.hasCustom = false;
                     slot.currentUrl = '';
                     slot.syncedAudioId = '';
-                    slot.fileName = key === 'bgm' ? '内蔵シンセBGM' : '内蔵ゲームサウンド';
+                    slot.fileName = (key === 'bgm' || key === 'slideshowBgm') ? '内蔵シンセBGM' : '内蔵ゲームサウンド';
                     const nameEl = document.getElementById(`sound-name-${key}`);
                     if (nameEl) nameEl.textContent = slot.fileName;
                 }
@@ -1229,9 +1255,12 @@
                 slot.fileName = sharedMeta.fileName;
                 if (nameEl) nameEl.textContent = `🌐 全員共有中: ${sharedMeta.fileName}`;
 
-                if (key === 'bgm' && roomState?.status === 'playing') {
+                if (key === 'bgm' && roomState?.status === 'playing' && !isSlideshowModalActive) {
                     stopQuizBgm();
                     startQuizBgm();
+                } else if (key === 'slideshowBgm' && isSlideshowModalActive) {
+                    stopSlideshowBgm();
+                    startSlideshowBgm();
                 }
             } catch (err) {
                 console.error("Failed to load shared audio:", err);
@@ -1253,11 +1282,12 @@
 
         const SOUND_DEFS = [
             { key: 'bgm', label: '① 解答中BGM（5MB以上OK・全員に自動共有）', icon: 'fa-solid fa-music text-purple-600', loop: true },
-            { key: 'submit', label: '② 解答完了ボタン効果音（SE・全員共有）', icon: 'fa-solid fa-bell text-orange-500', loop: false },
-            { key: 'correct', label: '③ 正解時効果音（SE・全員共有）', icon: 'fa-regular fa-circle text-red-500', loop: false },
-            { key: 'wrong', label: '④ 不正解時効果音（SE・全員共有）', icon: 'fa-solid fa-xmark text-blue-500', loop: false },
-            { key: 'timeup', label: '⑤ ゲームオーバー音・BGM（全員共有）', icon: 'fa-solid fa-hourglass-end text-purple-500', loop: false },
-            { key: 'clear', label: '⑥ ステージクリア音・BGM（全員共有）', icon: 'fa-solid fa-trophy text-green-500', loop: false }
+            { key: 'slideshowBgm', label: '② スライドショー時BGM（mp3等・全員に自動共有）', icon: 'fa-solid fa-film text-pink-600', loop: true },
+            { key: 'submit', label: '③ 解答完了ボタン効果音（SE・全員共有）', icon: 'fa-solid fa-bell text-orange-500', loop: false },
+            { key: 'correct', label: '④ 正解時効果音（SE・全員共有）', icon: 'fa-regular fa-circle text-red-500', loop: false },
+            { key: 'wrong', label: '⑤ 不正解時効果音（SE・全員共有）', icon: 'fa-solid fa-xmark text-blue-500', loop: false },
+            { key: 'timeup', label: '⑥ ゲームオーバー音・BGM（全員共有）', icon: 'fa-solid fa-hourglass-end text-purple-500', loop: false },
+            { key: 'clear', label: '⑦ ステージクリア音・BGM（全員共有）', icon: 'fa-solid fa-trophy text-green-500', loop: false }
         ];
 
         const customMediaPlayers = {};
@@ -1279,7 +1309,7 @@
                     hasCustom: false,
                     currentUrl: '',
                     syncedAudioId: '',
-                    fileName: def.key === 'bgm' ? '内蔵シンセBGM' : '内蔵ゲームサウンド'
+                    fileName: (def.key === 'bgm' || def.key === 'slideshowBgm') ? '内蔵シンセBGM' : '内蔵ゲームサウンド'
                 };
 
                 const row = document.createElement('div');
@@ -1354,9 +1384,12 @@
 
                         showToast(`🌐 「${rawFile.name}」を設定し、全プレイヤーに共有しました！`, "success");
 
-                        if (key === 'bgm' && roomState?.status === 'playing') {
+                        if (key === 'bgm' && roomState?.status === 'playing' && !isSlideshowModalActive) {
                             stopQuizBgm();
                             startQuizBgm();
+                        } else if (key === 'slideshowBgm' && isSlideshowModalActive) {
+                            stopSlideshowBgm();
+                            startSlideshowBgm();
                         }
                     } catch (err) {
                         console.error(err);
@@ -1392,6 +1425,26 @@
                                 btn.innerHTML = '<i class="fa-solid fa-stop"></i> 停止';
                             }
                         }
+                    } else if (key === 'slideshowBgm') {
+                        const slot = customMediaPlayers.slideshowBgm;
+                        if (slot.hasCustom && slot.videoEl.src) {
+                            if (!slot.videoEl.paused) {
+                                slot.videoEl.pause();
+                                btn.innerHTML = '<i class="fa-solid fa-play"></i> 試聴';
+                            } else {
+                                slot.videoEl.volume = masterVolume;
+                                slot.videoEl.play().catch(() => {});
+                                btn.innerHTML = '<i class="fa-solid fa-stop"></i> 停止';
+                            }
+                        } else {
+                            if (isSlideshowBgmRunning) {
+                                stopSlideshowBgm();
+                                btn.innerHTML = '<i class="fa-solid fa-play"></i> 試聴';
+                            } else {
+                                startSlideshowBgm();
+                                btn.innerHTML = '<i class="fa-solid fa-stop"></i> 停止';
+                            }
+                        }
                     } else {
                         playGameEventSound(key);
                     }
@@ -1409,7 +1462,7 @@
                     slot.hasCustom = false;
                     slot.currentUrl = '';
                     slot.syncedAudioId = '';
-                    slot.fileName = key === 'bgm' ? '内蔵シンセBGM' : '内蔵ゲームサウンド';
+                    slot.fileName = (key === 'bgm' || key === 'slideshowBgm') ? '内蔵シンセBGM' : '内蔵ゲームサウンド';
                     document.getElementById(`sound-name-${key}`).textContent = slot.fileName;
 
                     if (currentRoomId) {
@@ -1425,9 +1478,12 @@
 
                     showToast("全員のサウンドを初期設定に戻しました", "info");
 
-                    if (key === 'bgm' && roomState?.status === 'playing') {
+                    if (key === 'bgm' && roomState?.status === 'playing' && !isSlideshowModalActive) {
                         stopQuizBgm();
                         startQuizBgm();
+                    } else if (key === 'slideshowBgm' && isSlideshowModalActive) {
+                        stopSlideshowBgm();
+                        startSlideshowBgm();
                     }
                 });
             });
@@ -1627,6 +1683,68 @@
             }
         }
 
+        let slideshowSynthTimer = null;
+        let slideshowSynthStep = 0;
+        let isSlideshowBgmRunning = false;
+
+        function startSlideshowBgm() {
+            if (isSlideshowBgmRunning) return;
+            stopSlideshowBgm();
+            if (isMuted) return;
+            isSlideshowBgmRunning = true;
+
+            const ssSlot = customMediaPlayers.slideshowBgm;
+            if (ssSlot && ssSlot.hasCustom && ssSlot.currentUrl) {
+                ssSlot.videoEl.volume = masterVolume;
+                ssSlot.videoEl.currentTime = 0;
+                const playPromise = ssSlot.videoEl.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {
+                        const resumeOnTap = () => {
+                            if (isSlideshowBgmRunning && !isMuted && ssSlot.hasCustom) {
+                                ssSlot.videoEl.volume = masterVolume;
+                                ssSlot.videoEl.play().catch(() => {});
+                            }
+                        };
+                        window.addEventListener('pointerdown', resumeOnTap, { once: true });
+                    });
+                }
+                return;
+            }
+
+            ensureAudioCtx();
+            const melodyNotes = [392.00, 440.00, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00];
+            slideshowSynthTimer = setInterval(() => {
+                if (isMuted || !audioCtx) return;
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                const freq = melodyNotes[slideshowSynthStep % melodyNotes.length];
+                osc.frequency.setValueAtTime(freq, now);
+                gain.gain.setValueAtTime(masterVolume * 0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.36);
+                slideshowSynthStep++;
+            }, 400);
+        }
+
+        function stopSlideshowBgm() {
+            isSlideshowBgmRunning = false;
+            if (slideshowSynthTimer) {
+                clearInterval(slideshowSynthTimer);
+                slideshowSynthTimer = null;
+            }
+            slideshowSynthStep = 0;
+            const p = customMediaPlayers.slideshowBgm?.videoEl;
+            if (p && !p.paused) {
+                p.pause();
+            }
+        }
+
         document.getElementById('bgm-volume-slider').addEventListener('input', (e) => {
             masterVolume = parseInt(e.target.value, 10) / 100;
             Object.values(customMediaPlayers).forEach(s => {
@@ -1641,9 +1759,14 @@
             document.querySelector('#btn-mute-audio-mobile i').className = cls;
             if (isMuted) {
                 stopQuizBgm();
+                stopSlideshowBgm();
                 stopAllEventMedia();
-            } else if (roomState?.status === 'playing') {
-                startQuizBgm();
+            } else {
+                if (isSlideshowModalActive) {
+                    startSlideshowBgm();
+                } else if (roomState?.status === 'playing') {
+                    startQuizBgm();
+                }
             }
         }
         document.getElementById('btn-mute-audio').addEventListener('click', toggleMute);
@@ -1770,6 +1893,12 @@
                     teams: {},
                     problemImages: [],
                     activeImageIndex: -1,
+                    slideshowState: {
+                        active: false,
+                        imageIds: [],
+                        startedAt: 0,
+                        durationPerSlide: 4000
+                    },
                     endTime: 0,
                     turnIndex: 0,
                     submittedFlag: false,
@@ -1870,8 +1999,10 @@
             if (!currentRoomId || !currentUser) return;
             const rId = currentRoomId;
             stopQuizBgm();
+            stopSlideshowBgm();
             stopAllEventMedia();
             closeFullscreenBoard();
+            closeSlideshowViewerLocal();
             if (roomUnsubscribe) roomUnsubscribe();
             if (strokesUnsubscribe) strokesUnsubscribe();
             if (countdownInterval) clearInterval(countdownInterval);
@@ -2014,7 +2145,9 @@
                 if (data.status === 'playing') {
                     hasTriggeredLocalTimeup = false;
                     playGameEventSound('start');
-                    startQuizBgm();
+                    if (!isSlideshowModalActive) {
+                        startQuizBgm();
+                    }
                 } else {
                     stopQuizBgm();
                     if (data.status === 'cleared') {
@@ -2092,6 +2225,7 @@
             const imgDisplay = document.getElementById('problem-image-display');
             const imgCaption = document.getElementById('problem-image-caption');
             const fsNewBadge = document.getElementById('fs-image-new-badge');
+            const fsSpecNewBadge = document.getElementById('fs-spec-image-new-badge');
 
             if (activeImg) {
                 imgWrapper.classList.remove('hidden');
@@ -2100,13 +2234,18 @@
                 if (activeImgIdx !== lastActiveImageIndex) {
                     lastActiveImageIndex = activeImgIdx;
                     fsNewBadge.classList.remove('hidden');
+                    if (fsSpecNewBadge) fsSpecNewBadge.classList.remove('hidden');
                     showToast(`🖼️ 司会者が問題画像「${activeImg.title || '画像'}」を公開しました！`, "info");
                 }
             } else {
                 imgWrapper.classList.add('hidden');
                 lastActiveImageIndex = -1;
                 fsNewBadge.classList.add('hidden');
+                if (fsSpecNewBadge) fsSpecNewBadge.classList.add('hidden');
             }
+
+            // スライドショー状態の同期
+            syncSlideshowPlayback(data, myRole);
 
             const refBar = document.getElementById('ref-answers-bar');
             if ((myRole === 'host' || data.status === 'cleared' || data.status === 'gameover') && data.refAnswers) {
@@ -2195,6 +2334,7 @@
 
             document.getElementById('fs-drawer-toolbar').classList.toggle('hidden', !canDraw);
             document.getElementById('fs-host-toolbar').classList.toggle('hidden', !isHostPlaying || Boolean(data.panelHighlightRed));
+            document.getElementById('fs-viewer-toolbar').classList.toggle('hidden', canDraw || (isHostPlaying && !Boolean(data.panelHighlightRed)));
 
             document.getElementById('fs-spectating-badge').classList.toggle('hidden', canDraw || isHostPlaying || data.status !== 'playing');
             document.getElementById('fs-submitted-overlay').classList.toggle('hidden', !(data.status === 'playing' && data.submittedFlag && !data.panelHighlightRed));
@@ -2582,24 +2722,6 @@
             });
         }
 
-        const SAMPLE_QUESTIONS = [
-            { q: "日本の都道府県で「山」がつく県をすべて答えよ！", target: 6, time: 60, pts: 100, ref: "山形県、山梨県、富山県、岡山県、山口県、和歌山県" },
-            { q: "JR山手線の駅名を6つ答えよ！", target: 6, time: 60, pts: 100, ref: "東京、新橋、品川、渋谷、新宿、池袋、上野、秋葉原 など" },
-            { q: "「十二支（えと）」の動物を6つ答えよ！", target: 6, time: 45, pts: 150, ref: "子、丑、寅、卯、辰、巳、午、未、申、酉、戌、亥" }
-        ];
-        let sampleIdx = 0;
-
-        document.getElementById('btn-load-sample').addEventListener('click', () => {
-            const item = SAMPLE_QUESTIONS[sampleIdx % SAMPLE_QUESTIONS.length];
-            sampleIdx++;
-            document.getElementById('cfg-question').value = item.q;
-            document.getElementById('cfg-target-count').value = item.target;
-            document.getElementById('cfg-time-limit').value = item.time;
-            document.getElementById('cfg-problem-points').value = item.pts;
-            document.getElementById('cfg-ref-answers').value = item.ref;
-            showToast(`例題 ${sampleIdx} をセットしました！`, "info");
-        });
-
         document.getElementById('cfg-time-preset').addEventListener('change', (e) => {
             document.getElementById('cfg-time-limit').value = e.target.value;
         });
@@ -2683,8 +2805,165 @@
             showToast("問題画像を非公開にしました", "info");
         });
 
+        // スライドショー選択順序（チェックした順番に画像IDを保持）
+        let slideshowSelectedOrder = [];
+        let slideshowPlaybackTimer = null;
+        let isSlideshowModalActive = false;
+        let currentSlideshowRunId = 0;
+
+        document.getElementById('btn-clear-slideshow-order').addEventListener('click', () => {
+            slideshowSelectedOrder = [];
+            if (roomState) {
+                renderHostImageGallery(roomState.problemImages || [], roomState.activeImageIndex ?? -1);
+            }
+        });
+
+        document.getElementById('btn-start-slideshow').addEventListener('click', async () => {
+            if (!currentRoomId || !roomState) return;
+            const images = roomState.problemImages || [];
+            const validIds = slideshowSelectedOrder.filter(id => images.some(img => img.id === id));
+            if (validIds.length === 0) {
+                return showToast("スライドショーに表示する画像にチェックを入れてください！", "error");
+            }
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+            await updateDoc(roomRef, {
+                slideshowState: {
+                    active: true,
+                    imageIds: validIds,
+                    startedAt: Date.now(),
+                    durationPerSlide: 4000
+                }
+            });
+            showToast(`🎬 ${validIds.length}枚のスライドショー配信を開始しました！`, "success");
+        });
+
+        async function stopSlideshowBroadcast() {
+            if (!currentRoomId) return;
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
+            await updateDoc(roomRef, {
+                slideshowState: {
+                    active: false,
+                    imageIds: [],
+                    startedAt: 0,
+                    durationPerSlide: 4000
+                }
+            });
+        }
+
+        document.getElementById('btn-stop-slideshow').addEventListener('click', stopSlideshowBroadcast);
+        document.getElementById('btn-stop-slideshow-modal').addEventListener('click', stopSlideshowBroadcast);
+
+        function closeSlideshowViewerLocal() {
+            isSlideshowModalActive = false;
+            currentSlideshowRunId = 0;
+            if (slideshowPlaybackTimer) {
+                clearInterval(slideshowPlaybackTimer);
+                slideshowPlaybackTimer = null;
+            }
+            stopSlideshowBgm();
+            const modal = document.getElementById('slideshow-viewer-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            if (roomState?.status === 'playing' && !isMuted) {
+                startQuizBgm();
+            }
+        }
+
+        function syncSlideshowPlayback(data, myRole) {
+            const ss = data.slideshowState;
+            const images = data.problemImages || [];
+            const startBtn = document.getElementById('btn-start-slideshow');
+            const stopBtn = document.getElementById('btn-stop-slideshow');
+            const modalStopBtn = document.getElementById('btn-stop-slideshow-modal');
+
+            if (!ss || !ss.active || !ss.imageIds || ss.imageIds.length === 0) {
+                if (startBtn) startBtn.classList.remove('hidden');
+                if (stopBtn) stopBtn.classList.add('hidden');
+                if (isSlideshowModalActive) {
+                    closeSlideshowViewerLocal();
+                }
+                return;
+            }
+
+            const slideItems = ss.imageIds
+                .map(id => images.find(img => img.id === id))
+                .filter(Boolean);
+
+            if (slideItems.length === 0) {
+                if (isSlideshowModalActive) closeSlideshowViewerLocal();
+                return;
+            }
+
+            if (startBtn) startBtn.classList.add('hidden');
+            if (stopBtn) stopBtn.classList.remove('hidden');
+            if (modalStopBtn) modalStopBtn.classList.toggle('hidden', myRole !== 'host');
+
+            const durationPerSlide = ss.durationPerSlide || 4000;
+            const totalDuration = slideItems.length * durationPerSlide;
+            const elapsedAtSync = Date.now() - ss.startedAt;
+
+            if (elapsedAtSync >= totalDuration) {
+                if (isSlideshowModalActive) closeSlideshowViewerLocal();
+                if (myRole === 'host') {
+                    stopSlideshowBroadcast();
+                }
+                return;
+            }
+
+            if (isSlideshowModalActive && currentSlideshowRunId === ss.startedAt) {
+                return;
+            }
+
+            isSlideshowModalActive = true;
+            currentSlideshowRunId = ss.startedAt;
+            stopQuizBgm();
+            startSlideshowBgm();
+
+            const modal = document.getElementById('slideshow-viewer-modal');
+            const imgEl = document.getElementById('slideshow-current-img');
+            const titleEl = document.getElementById('slideshow-current-title');
+            const badgeEl = document.getElementById('slideshow-progress-badge');
+            const barEl = document.getElementById('slideshow-timer-bar');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            let lastShownIdx = -1;
+            const updateSlideFrame = () => {
+                const now = Date.now();
+                const elapsed = Math.max(0, now - ss.startedAt);
+                if (elapsed >= totalDuration) {
+                    closeSlideshowViewerLocal();
+                    if (myRole === 'host') {
+                        stopSlideshowBroadcast();
+                    }
+                    return;
+                }
+                const slideIdx = Math.min(slideItems.length - 1, Math.floor(elapsed / durationPerSlide));
+                const slideElapsed = elapsed % durationPerSlide;
+                const remainPct = Math.max(0, 100 - (slideElapsed / durationPerSlide) * 100);
+
+                if (slideIdx !== lastShownIdx) {
+                    lastShownIdx = slideIdx;
+                    const item = slideItems[slideIdx];
+                    imgEl.src = item.url;
+                    titleEl.textContent = item.title || `スライド ${slideIdx + 1}`;
+                    badgeEl.textContent = `${slideIdx + 1} / ${slideItems.length}`;
+                }
+                barEl.style.width = `${remainPct}%`;
+            };
+
+            updateSlideFrame();
+            if (slideshowPlaybackTimer) clearInterval(slideshowPlaybackTimer);
+            slideshowPlaybackTimer = setInterval(updateSlideFrame, 80);
+        }
+
         function renderHostImageGallery(images, activeIdx) {
             document.getElementById('host-img-count').textContent = images.length;
+            slideshowSelectedOrder = slideshowSelectedOrder.filter(id => images.some(img => img.id === id));
+            const countSpan = document.getElementById('slideshow-selected-count');
+            if (countSpan) countSpan.textContent = slideshowSelectedOrder.length;
+
             const gallery = document.getElementById('host-image-gallery');
             const emptyMsg = document.getElementById('host-image-empty');
             gallery.innerHTML = '';
@@ -2697,12 +2976,21 @@
 
             images.forEach((img, idx) => {
                 const isPublished = idx === activeIdx;
+                const orderIdx = slideshowSelectedOrder.indexOf(img.id);
+                const isChecked = orderIdx !== -1;
+
                 const card = document.createElement('div');
-                card.className = `rounded-xl p-2 border-2 flex flex-col gap-1.5 transition ${isPublished ? 'bg-green-50 border-green-500 shadow' : 'bg-white border-slate-200'}`;
+                card.className = `rounded-xl p-2 border-2 flex flex-col gap-1.5 transition ${isPublished ? 'bg-green-50 border-green-500 shadow' : (isChecked ? 'bg-pink-50 border-pink-400' : 'bg-white border-slate-200')}`;
                 card.innerHTML = `
                     <div class="relative aspect-video bg-slate-50 rounded-lg overflow-hidden border border-slate-200">
                         <img src="${img.url}" alt="${escapeHtml(img.title)}" class="w-full h-full object-contain">
-                        ${isPublished ? '<span class="absolute top-1 left-1 bg-green-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded">公開中</span>' : ''}
+                        <label class="absolute top-1 left-1 bg-white/95 border border-pink-400 px-1.5 py-0.5 rounded-md flex items-center gap-1 cursor-pointer shadow-sm">
+                            <input type="checkbox" data-slide-id="${img.id}" class="slideshow-order-chk w-3.5 h-3.5 accent-pink-500" ${isChecked ? 'checked' : ''}>
+                            <span class="text-[10px] font-black ${isChecked ? 'text-pink-600' : 'text-slate-500'}">
+                                ${isChecked ? `順 #${orderIdx + 1}` : 'スライド'}
+                            </span>
+                        </label>
+                        ${isPublished ? '<span class="absolute bottom-1 left-1 bg-green-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded">公開中</span>' : ''}
                         <button type="button" data-del-img="${idx}" class="del-img-btn absolute top-1 right-1 w-6 h-6 bg-white/90 hover:bg-red-500 text-slate-600 hover:text-white border border-slate-300 rounded-md text-xs flex items-center justify-center" title="削除">
                             <i class="fa-solid fa-trash"></i>
                         </button>
@@ -2713,6 +3001,20 @@
                     </button>
                 `;
                 gallery.appendChild(card);
+            });
+
+            gallery.querySelectorAll('.slideshow-order-chk').forEach(chk => {
+                chk.addEventListener('change', () => {
+                    const imgId = chk.dataset.slideId;
+                    if (chk.checked) {
+                        if (!slideshowSelectedOrder.includes(imgId)) {
+                            slideshowSelectedOrder.push(imgId);
+                        }
+                    } else {
+                        slideshowSelectedOrder = slideshowSelectedOrder.filter(id => id !== imgId);
+                    }
+                    renderHostImageGallery(images, activeIdx);
+                });
             });
 
             gallery.querySelectorAll('.pub-img-btn').forEach(btn => {
@@ -2727,6 +3029,10 @@
             gallery.querySelectorAll('.del-img-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const idx = parseInt(btn.dataset.delImg, 10);
+                    const targetImg = images[idx];
+                    if (targetImg) {
+                        slideshowSelectedOrder = slideshowSelectedOrder.filter(id => id !== targetImg.id);
+                    }
                     const nextImgs = images.filter((_, i) => i !== idx);
                     let nextActive = activeIdx;
                     if (activeIdx === idx) nextActive = -1;
@@ -2749,10 +3055,14 @@
             document.getElementById('image-viewer-modal').classList.remove('hidden');
             document.getElementById('image-viewer-modal').classList.add('flex');
             document.getElementById('fs-image-new-badge').classList.add('hidden');
+            const specBadge = document.getElementById('fs-spec-image-new-badge');
+            if (specBadge) specBadge.classList.add('hidden');
         }
 
         document.getElementById('btn-open-main-image').addEventListener('click', openCurrentProblemImageModal);
         document.getElementById('btn-fs-view-image').addEventListener('click', openCurrentProblemImageModal);
+        document.getElementById('btn-fs-host-view-image').addEventListener('click', openCurrentProblemImageModal);
+        document.getElementById('btn-fs-spec-view-image').addEventListener('click', openCurrentProblemImageModal);
         document.getElementById('btn-close-image-modal').addEventListener('click', () => {
             document.getElementById('image-viewer-modal').classList.add('hidden');
             document.getElementById('image-viewer-modal').classList.remove('flex');
@@ -3009,7 +3319,7 @@
         }
 
         // ==========================================
-        // 9. カウントダウンタイマー＆制限時間メーター更新
+        // 9. カウントダウンタイマー＆30ブロック制限時間メーター更新
         // ==========================================
         let lastBeep = -1;
         let hasTriggeredLocalTimeup = false;
@@ -3043,26 +3353,38 @@
             return { textCls: 'text-blue-500', iconCls: 'text-blue-500', borderCls: 'border-blue-500', bgCls: 'bg-white' };
         }
 
-        const METER_BLOCK_COLORS = [
-            '#2563eb', // 1: 青
-            '#0284c7', // 2: 青水色
-            '#059669', // 3: 青緑
-            '#16a34a', // 4: 緑
-            '#84cc16', // 5: 黄緑
-            '#eab308', // 6: 黄
-            '#f59e0b', // 7: 山吹
-            '#f97316', // 8: オレンジ
-            '#ea580c', // 9: 濃オレンジ
-            '#ef4444'  // 10: 赤
-        ];
+        const METER_BLOCK_COUNT = 30;
+
+        function getMeterBlockColor(idx) {
+            // 0(上・青) 〜 29(下・赤) の30段階グラデーション（HSL 220°→0°）
+            const ratio = idx / (METER_BLOCK_COUNT - 1);
+            const hue = Math.round(220 * (1 - ratio));
+            return `hsl(${hue}, 90%, 50%)`;
+        }
+
+        function initTimeMeterBlocksUI() {
+            const container = document.getElementById('fs-meter-blocks');
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < METER_BLOCK_COUNT; i++) {
+                const col = getMeterBlockColor(i);
+                const block = document.createElement('div');
+                block.className = 'fs-meter-block flex-1 rounded-[2px] transition-all duration-150';
+                block.dataset.blockIdx = String(i);
+                block.style.backgroundColor = col;
+                block.style.boxShadow = `0 0 6px ${col}`;
+                container.appendChild(block);
+            }
+        }
+        initTimeMeterBlocksUI();
 
         function updateTimeMeterBlocks(rem, totalLimit) {
             const blocks = document.querySelectorAll('.fs-meter-block');
             if (!blocks.length) return;
             const limit = Math.max(1, totalLimit || 60);
-            const stepSec = limit / 10;
-            const activeCount = rem <= 0 ? 0 : Math.min(10, Math.ceil(rem / stepSec));
-            const offCount = 10 - activeCount;
+            const stepSec = limit / METER_BLOCK_COUNT;
+            const activeCount = rem <= 0 ? 0 : Math.min(METER_BLOCK_COUNT, Math.ceil(rem / stepSec));
+            const offCount = METER_BLOCK_COUNT - activeCount;
 
             blocks.forEach((el, idx) => {
                 if (idx < offCount) {
@@ -3070,9 +3392,9 @@
                     el.style.boxShadow = 'none';
                     el.style.opacity = '0.35';
                 } else {
-                    const col = METER_BLOCK_COLORS[idx];
+                    const col = getMeterBlockColor(idx);
                     el.style.backgroundColor = col;
-                    el.style.boxShadow = `0 0 8px ${col}`;
+                    el.style.boxShadow = `0 0 6px ${col}`;
                     el.style.opacity = '1';
                 }
             });
@@ -3091,9 +3413,9 @@
             iconEl.className = `fa-solid fa-stopwatch ${style.iconCls} transition-colors duration-200`;
             boxEl.className = `flex items-center gap-2 ${style.bgCls} border-2 ${style.borderCls} px-3.5 py-1 rounded-xl shadow-sm transition-colors duration-200`;
 
-            fsTimerEl.className = `font-led font-black text-base sm:text-2xl ${style.textCls} tabular-nums leading-none transition-colors duration-200`;
-            fsIconEl.className = `fa-solid fa-stopwatch ${style.iconCls} text-[10px] sm:text-sm transition-colors duration-200`;
-            fsBoxEl.className = `${style.bgCls} border-2 ${style.borderCls} px-1 py-1 sm:px-2 sm:py-1.5 rounded-b-xl sm:rounded-b-2xl rounded-t-none flex items-center justify-center gap-0.5 sm:gap-1 shadow-md transition-colors duration-200 shrink-0`;
+            fsTimerEl.className = `font-led font-black text-sm sm:text-xl ${style.textCls} tabular-nums leading-none transition-colors duration-200`;
+            fsIconEl.className = `fa-solid fa-stopwatch ${style.iconCls} text-[9px] sm:text-xs transition-colors duration-200`;
+            fsBoxEl.className = `${style.bgCls} border-2 ${style.borderCls} px-1 py-1 sm:px-1.5 sm:py-1.5 rounded-b-xl sm:rounded-b-2xl rounded-t-none flex items-center justify-center gap-0.5 shadow-md transition-colors duration-200 shrink-0`;
 
             updateTimeMeterBlocks(rem, totalLimit);
         }
