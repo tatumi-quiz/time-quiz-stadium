@@ -110,7 +110,7 @@
             animation: cutinSlide 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        /* 全画面表示レイアウト：左サイドバーを廃止し、中央16:9パネルを最大化、右に30ブロック制限時間メーター */
+        /* 全画面表示レイアウト：中央16:9パネルを最大化、右に30ブロック制限時間メーター */
         #fs-main-container {
             display: flex;
             flex-direction: row;
@@ -194,27 +194,27 @@
         </div>
     </div>
 
-    <!-- ==================== 問題画像拡大閲覧モーダル ==================== -->
-    <div id="image-viewer-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[105] hidden flex-col items-center justify-center p-3 sm:p-6">
-        <div class="w-full max-w-4xl rainbow-border-panel rounded-3xl p-4 sm:p-5 flex flex-col gap-3 animate-pop">
-            <div class="flex items-center justify-between border-b-2 border-slate-100 pb-2">
+    <!-- ==================== 問題画像拡大閲覧モーダル（最大化表示対応） ==================== -->
+    <div id="image-viewer-modal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-md z-[105] hidden flex-col items-center justify-center p-2 sm:p-6">
+        <div class="w-full max-w-6xl h-[92vh] rainbow-border-panel rounded-3xl p-3 sm:p-5 flex flex-col gap-3 animate-pop">
+            <div class="flex items-center justify-between border-b-2 border-slate-100 pb-2 shrink-0">
                 <div class="flex items-center gap-2 min-w-0">
                     <span class="bg-purple-500 text-white text-xs font-black px-2.5 py-1 rounded-lg">IMAGE HINT</span>
-                    <h3 id="modal-image-title" class="font-black text-slate-800 text-base sm:text-lg truncate">公開中の問題画像</h3>
+                    <h3 id="modal-image-title" class="font-black text-slate-800 text-base sm:text-xl truncate">公開中の問題画像</h3>
                 </div>
-                <button id="btn-close-image-modal" class="px-3.5 py-1.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn">
+                <button id="btn-close-image-modal" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl text-xs sm:text-sm game-btn shadow">
                     <i class="fa-solid fa-xmark mr-1"></i>閉じる
                 </button>
             </div>
-            <div class="w-full max-h-[70vh] bg-slate-50 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-cyan-200 p-2">
-                <img id="modal-image-src" src="" alt="問題画像拡大" class="max-w-full max-h-[66vh] object-contain rounded-lg">
+            <div class="flex-1 w-full bg-slate-900 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-cyan-400 p-2 min-h-0">
+                <img id="modal-image-src" src="" alt="問題画像拡大" class="w-full h-full object-contain rounded-lg shadow-2xl">
             </div>
         </div>
     </div>
 
-    <!-- ==================== 問題スライドショー全画面モーダル（全解答者・観覧者同期） ==================== -->
-    <div id="slideshow-viewer-modal" class="fixed inset-0 bg-slate-950/92 backdrop-blur-md z-[110] hidden flex-col items-center justify-between p-3 sm:p-6 select-none">
-        <div class="w-full max-w-5xl flex items-center justify-between gap-2 bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white">
+    <!-- ==================== 問題スライドショー全画面モーダル（最大化表示対応） ==================== -->
+    <div id="slideshow-viewer-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-[110] hidden flex-col items-center justify-between p-3 sm:p-6 select-none">
+        <div class="w-full max-w-6xl flex items-center justify-between gap-2 bg-white/10 border border-white/20 rounded-2xl px-4 py-2 text-white shrink-0">
             <div class="flex items-center gap-2 min-w-0">
                 <span class="bg-gradient-to-r from-pink-500 to-orange-500 text-white text-xs font-black px-2.5 py-1 rounded-lg animate-pulse shrink-0">
                     <i class="fa-solid fa-film mr-1"></i>SLIDESHOW
@@ -230,14 +230,14 @@
             </div>
         </div>
 
-        <div class="flex-1 w-full max-w-5xl my-3 flex items-center justify-center min-h-0 overflow-hidden">
-            <div class="relative w-full h-full flex items-center justify-center rounded-2xl overflow-hidden bg-black/50 border-2 border-white/20 p-2">
-                <img id="slideshow-current-img" src="" alt="スライドショー画像" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transition-all duration-300">
+        <div class="flex-1 w-full max-w-6xl my-3 flex items-center justify-center min-h-0 overflow-hidden">
+            <div class="relative w-full h-full flex items-center justify-center rounded-2xl overflow-hidden bg-black/70 border-2 border-white/20 p-2 shadow-2xl">
+                <img id="slideshow-current-img" src="" alt="スライドショー画像" class="w-full h-full object-contain rounded-xl shadow-2xl transition-all duration-300">
             </div>
         </div>
 
         <!-- 4秒プログレスバー -->
-        <div class="w-full max-w-5xl bg-white/20 h-2.5 rounded-full overflow-hidden p-0.5">
+        <div class="w-full max-w-6xl bg-white/20 h-3 rounded-full overflow-hidden p-0.5 shrink-0">
             <div id="slideshow-timer-bar" class="h-full rainbow-gradient-bar rounded-full transition-all duration-100" style="width: 100%"></div>
         </div>
     </div>
@@ -282,7 +282,7 @@
 
         <!-- 全画面メインエリア（中央：16:9最大化パネル ／ 右：30ブロック制限時間メーター） -->
         <div id="fs-main-container" class="relative flex-1 min-h-0 w-full overflow-hidden">
-            <!-- 中央キャンバス本体（左デッドスペースなし・16:9比率を維持したまま最大限拡大） -->
+            <!-- 中央キャンバス本体 -->
             <div id="fs-canvas-wrapper" class="relative overflow-hidden">
                 <div id="fs-canvas-container" class="relative aspect-[16/9] max-w-full max-h-full w-auto h-full rounded-xl sm:rounded-2xl overflow-hidden border-[3px] sm:border-4 border-cyan-500 bg-[#1f48ff] shadow-xl flex items-center justify-center transition-colors duration-200">
                     <canvas id="fs-live-canvas" class="relay-canvas w-full h-full block object-contain"></canvas>
@@ -291,36 +291,36 @@
                         <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span> ライブ観戦中
                     </div>
 
-                    <!-- パネル内下部中央：解答者用コンパクト横1列ツールバー（全削除・解答完了・問題画像） -->
-                    <div id="fs-drawer-toolbar" class="hidden absolute bottom-1.5 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1 sm:gap-1.5 bg-slate-900/65 backdrop-blur-xs px-2 py-1 rounded-full border border-white/30 shadow-lg">
-                        <button id="btn-fs-clear" class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-red-500 hover:bg-red-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                    <!-- パネル内中央上部：解答者用ツールバー（全削除・解答完了・問題画像） -->
+                    <div id="fs-drawer-toolbar" class="hidden absolute top-2 sm:top-3 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1.5 sm:gap-2 bg-slate-900/75 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/40 shadow-xl">
+                        <button id="btn-fs-clear" class="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-full text-[11px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1 shadow">
                             <i class="fa-solid fa-trash-can"></i><span>全削除</span>
                         </button>
-                        <button id="btn-fs-submit" class="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                        <button id="btn-fs-submit" class="px-3 py-1 sm:px-4 sm:py-1.5 bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black rounded-full text-[11px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1 shadow">
                             <i class="fa-solid fa-bell"></i><span>解答完了</span>
                         </button>
-                        <button id="btn-fs-view-image" class="relative px-2 py-0.5 sm:px-2.5 sm:py-1 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                        <button id="btn-fs-view-image" class="relative px-2.5 py-1 sm:px-3 sm:py-1.5 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[11px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1 shadow">
                             <i class="fa-regular fa-image"></i><span>問題画像</span>
                             <span id="fs-image-new-badge" class="hidden absolute -top-1.5 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full animate-bounce">NEW</span>
                         </button>
                     </div>
 
-                    <!-- パネル内下部中央：司会者用コンパクト横1列ツールバー（正解・不正解・問題画像） -->
-                    <div id="fs-host-toolbar" class="hidden absolute bottom-1.5 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1 sm:gap-1.5 bg-slate-900/65 backdrop-blur-xs px-2 py-1 rounded-full border border-white/30 shadow-lg">
-                        <button id="btn-fs-correct" class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-red-500 hover:bg-red-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                    <!-- パネル内中央上部：司会者用ツールバー（正解・不正解・問題画像） -->
+                    <div id="fs-host-toolbar" class="hidden absolute top-2 sm:top-3 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1.5 sm:gap-2 bg-slate-900/75 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-white/40 shadow-xl">
+                        <button id="btn-fs-correct" class="px-3 py-1 sm:px-3.5 sm:py-1.5 bg-red-500 hover:bg-red-600 text-white font-black rounded-full text-[11px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1 shadow">
                             <span>⭕</span><span>正解</span>
                         </button>
-                        <button id="btn-fs-wrong" class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                        <button id="btn-fs-wrong" class="px-3 py-1 sm:px-3.5 sm:py-1.5 bg-blue-500 hover:bg-blue-600 text-white font-black rounded-full text-[11px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1 shadow">
                             <span>❌</span><span>不正解</span>
                         </button>
-                        <button id="btn-fs-host-view-image" class="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                        <button id="btn-fs-host-view-image" class="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[11px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1 shadow">
                             <i class="fa-regular fa-image"></i><span>問題画像</span>
                         </button>
                     </div>
 
-                    <!-- パネル内下部中央：観覧者・待機者用コンパクト問題画像ボタン -->
-                    <div id="fs-viewer-toolbar" class="hidden absolute bottom-1.5 sm:bottom-2.5 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1 bg-slate-900/65 backdrop-blur-xs px-2 py-1 rounded-full border border-white/30 shadow-lg">
-                        <button id="btn-fs-spec-view-image" class="relative px-2.5 py-0.5 sm:px-3 sm:py-1 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[10px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1">
+                    <!-- パネル内中央上部：観覧者・待機者用問題画像ボタン -->
+                    <div id="fs-viewer-toolbar" class="hidden absolute top-2 sm:top-3 left-1/2 -translate-x-1/2 z-20 flex flex-row items-center gap-1.5 bg-slate-900/75 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/40 shadow-xl">
+                        <button id="btn-fs-spec-view-image" class="relative px-3 py-1 sm:px-3.5 sm:py-1.5 bg-purple-500 hover:bg-purple-600 text-white font-black rounded-full text-[11px] sm:text-xs game-btn whitespace-nowrap flex items-center gap-1 shadow">
                             <i class="fa-regular fa-image"></i><span>問題画像</span>
                             <span id="fs-spec-image-new-badge" class="hidden absolute -top-1.5 -right-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full animate-bounce">NEW</span>
                         </button>
@@ -348,7 +348,7 @@
             <div id="fs-right-sidebar" class="min-h-0">
                 <div id="fs-time-meter-wrapper" class="flex-1 h-full min-h-0 flex flex-col justify-stretch">
                     <div class="w-full h-full flex flex-col">
-                        <!-- 上から下へ 青→緑→黄→オレンジ→赤 の30個ブロック（JSで動的生成） -->
+                        <!-- 上から下へ 青→緑→黄→オレンジ→赤 の30個ブロック -->
                         <div id="fs-meter-blocks" class="flex-1 min-h-0 w-full flex flex-col gap-[1px] sm:gap-[2px] p-1 bg-slate-900/90 border-2 border-b-0 border-slate-700 rounded-t-xl sm:rounded-t-2xl shadow-inner"></div>
                         <!-- ブロックの真下にくっつく制限時間表示 -->
                         <div id="fs-timer-box" class="bg-white border-2 border-blue-500 px-1 py-1 sm:px-1.5 sm:py-1.5 rounded-b-xl sm:rounded-b-2xl rounded-t-none flex items-center justify-center gap-0.5 shadow-md transition-colors duration-200 shrink-0">
@@ -482,11 +482,11 @@
         <!-- 問題＆ノルマ＆挑戦チーム表示モニター -->
         <section class="rainbow-border-panel rounded-2xl p-4 sm:p-5 relative overflow-hidden">
             <div class="flex flex-col md:flex-row items-center gap-4">
-                <div id="problem-image-wrapper" class="hidden w-full md:w-60 lg:w-72 flex-shrink-0">
+                <div id="problem-image-wrapper" class="hidden w-full md:w-64 lg:w-80 flex-shrink-0">
                     <div id="btn-open-main-image" class="group relative rounded-xl overflow-hidden border-2 border-purple-500 bg-slate-50 aspect-video flex items-center justify-center shadow cursor-pointer">
                         <img id="problem-image-display" src="" alt="公開中の問題画像" class="w-full h-full object-contain group-hover:scale-105 transition">
-                        <div class="absolute bottom-1.5 right-1.5 bg-white/95 text-purple-600 text-[10px] font-black px-2 py-0.5 rounded-md border border-purple-400 shadow">
-                            <i class="fa-solid fa-magnifying-glass-plus mr-1"></i>拡大表示
+                        <div class="absolute bottom-1.5 right-1.5 bg-white/95 text-purple-600 text-[10px] font-black px-2.5 py-1 rounded-md border border-purple-400 shadow">
+                            <i class="fa-solid fa-magnifying-glass-plus mr-1"></i>大きく表示
                         </div>
                     </div>
                     <div id="problem-image-caption" class="text-center text-[11px] font-extrabold text-purple-600 mt-1 truncate"></div>
@@ -1010,7 +1010,7 @@
         }
 
         // ==========================================
-        // 音声ファイル自動軽量化・圧縮関数（5000KB以上完全対応）
+        // 音声ファイル自動軽量化・圧縮関数
         // ==========================================
         async function compressAudioFile(file, forceTargetRate = 16000) {
             if (file.size <= 1.5 * 1024 * 1024 && forceTargetRate === 16000) {
@@ -1271,7 +1271,7 @@
         }
 
         // ==========================================
-        // 4. BGM・効果音マネージャー（全員共有＆シンセBGM機能）
+        // 4. BGM・効果音マネージャー
         // ==========================================
         let isMuted = false;
         let masterVolume = 0.45;
@@ -2732,7 +2732,7 @@
                 reader.onload = (ev) => {
                     const img = new Image();
                     img.onload = () => {
-                        const maxDim = 540;
+                        const maxDim = 960;
                         let w = img.width;
                         let h = img.height;
                         if (w > maxDim || h > maxDim) {
@@ -2748,7 +2748,7 @@
                         canvas.width = w;
                         canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        resolve(canvas.toDataURL('image/jpeg', 0.68));
+                        resolve(canvas.toDataURL('image/jpeg', 0.82));
                     };
                     img.src = ev.target.result;
                 };
@@ -2805,7 +2805,6 @@
             showToast("問題画像を非公開にしました", "info");
         });
 
-        // スライドショー選択順序（チェックした順番に画像IDを保持）
         let slideshowSelectedOrder = [];
         let slideshowPlaybackTimer = null;
         let isSlideshowModalActive = false;
@@ -3206,7 +3205,6 @@
                 const activeUid = activeOrder[roomState.turnIndex % activeOrder.length];
                 const activePlayer = roomState.participants?.[activeUid];
 
-                // まず正解した解答パネルを赤色（#ef4444）に変えてスナップショットを作成・1秒間表示する
                 setPanelBackgroundRedState(true);
                 const redSnapshotDataUrl = liveCanvas.toDataURL('image/jpeg', 0.65);
 
@@ -3225,7 +3223,6 @@
                 const nextTurnIdx = roomState.turnIndex + 1;
                 const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'stadium_rainbow_rooms', currentRoomId);
 
-                // 全員に「赤色パネル＋正解演出」を1秒間共有表示
                 await updateDoc(roomRef, {
                     clearedFlips: nextCleared,
                     panelHighlightRed: true,
@@ -3319,7 +3316,7 @@
         }
 
         // ==========================================
-        // 9. カウントダウンタイマー＆30ブロック制限時間メーター更新
+        // 9. カウントダウンタイマー＆制限時間メーター更新
         // ==========================================
         let lastBeep = -1;
         let hasTriggeredLocalTimeup = false;
@@ -3356,7 +3353,6 @@
         const METER_BLOCK_COUNT = 30;
 
         function getMeterBlockColor(idx) {
-            // 0(上・青) 〜 29(下・赤) の30段階グラデーション（HSL 220°→0°）
             const ratio = idx / (METER_BLOCK_COUNT - 1);
             const hue = Math.round(220 * (1 - ratio));
             return `hsl(${hue}, 90%, 50%)`;
@@ -3457,7 +3453,7 @@
         }
 
         // ==========================================
-        // 10. 手書きキャンバス（通常背景 #1f48ff / 正解時赤背景 #ef4444 / 白ペン固定）
+        // 10. 手書きキャンバス
         // ==========================================
         const liveCanvas = document.getElementById('relay-live-canvas');
         const liveCtx = liveCanvas.getContext('2d');
@@ -3506,7 +3502,6 @@
                 fsContainer.classList.toggle('border-cyan-500', !isRed);
             }
 
-            // ピクセル背景も赤色に変換して、正解済みサムネイル画像も赤色背景にする
             [liveCtx, fsCtx].forEach(ctx => {
                 const imgData = ctx.getImageData(0, 0, V_WIDTH, V_HEIGHT);
                 const d = imgData.data;
@@ -3518,7 +3513,6 @@
                     const r = d[i];
                     const g = d[i + 1];
                     const b = d[i + 2];
-                    // 白色ペン（R,G,Bすべて高い）以外の背景ピクセルを置換
                     if (!(r > 200 && g > 200 && b > 200)) {
                         d[i] = targetR;
                         d[i + 1] = targetG;
